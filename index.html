@@ -3,263 +3,216 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Mini Greenhouse · Smart Control</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-<!-- Firebase SDK (compat v10.8.1) — via jsDelivr -->
+<title>Smart Greenhouse v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.8.1/firebase-app-compat.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.8.1/firebase-database-compat.min.js"></script>
-<!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg0:#060f0a;--bg1:#0b1a10;--bg2:#0f2416;
-  --g1:#153320;--g2:#1d4a2e;--g3:#28693f;
-  --g4:#38955a;--g5:#52c47a;--g6:#7de8a0;--g7:#b0ffcc;
+  --bg0:#060f0a;--bg1:#0b1a10;
+  --g2:#1d4a2e;--g3:#28693f;--g5:#52c47a;--g6:#7de8a0;--g7:#b0ffcc;
   --lime:#d4ff4e;--amber:#ffad3b;--red:#ff5252;--blue:#43d9f5;--violet:#b57bff;
   --txt:#dff5e8;--muted:#5d9471;--dim:#2a4d36;
-  --card:rgba(15,36,22,.72);--border:rgba(82,196,122,.13);
-  --r:18px;
+  --card:rgba(15,36,22,.75);--border:rgba(82,196,122,.13);--r:16px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
 body{font-family:'Syne',sans-serif;background:var(--bg0);color:var(--txt);min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 70% 55% at 5% 0%,rgba(40,105,63,.25) 0%,transparent 60%),
-    radial-gradient(ellipse 55% 45% at 95% 100%,rgba(82,196,122,.14) 0%,transparent 55%),
-    radial-gradient(ellipse 80% 80% at 50% 50%,var(--bg1) 0%,var(--bg0) 100%);pointer-events:none}
+  background:radial-gradient(ellipse 70% 55% at 5% 0%,rgba(40,105,63,.22) 0%,transparent 60%),
+    radial-gradient(ellipse 55% 45% at 95% 100%,rgba(82,196,122,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 80% 80% at 50%50%,var(--bg1) 0%,var(--bg0) 100%);pointer-events:none}
 body::after{content:'';position:fixed;inset:0;z-index:0;
-  background-image:linear-gradient(rgba(82,196,122,.032) 1px,transparent 1px),linear-gradient(90deg,rgba(82,196,122,.032) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(82,196,122,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(82,196,122,.03) 1px,transparent 1px);
   background-size:48px 48px;pointer-events:none}
-.wrap{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:0 22px 70px}
+.wrap{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:0 20px 60px}
 
 /* HEADER */
-header{display:flex;align-items:center;justify-content:space-between;padding:26px 0 28px;border-bottom:1px solid var(--border);margin-bottom:28px;flex-wrap:wrap;gap:12px}
-.brand{display:flex;align-items:center;gap:14px}
-.bico{width:50px;height:50px;background:linear-gradient(135deg,var(--g3),var(--g6));border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 28px rgba(82,196,122,.35);flex-shrink:0}
-.brand h1{font-size:1.3rem;font-weight:800;color:var(--g7);letter-spacing:-1px;line-height:1.1}
-.brand p{font-size:.72rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace}
-.hdr-r{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.livebadge{display:flex;align-items:center;gap:7px;background:rgba(82,196,122,.1);border:1px solid rgba(82,196,122,.25);border-radius:100px;padding:6px 16px;font-size:.75rem;font-family:'Space Mono',monospace;color:var(--g6)}
-.pdot{width:8px;height:8px;border-radius:50%;background:var(--g6);animation:pdot 2s infinite}
-@keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(82,196,122,.5)}50%{box-shadow:0 0 0 6px rgba(82,196,122,0)}}
-.upd{font-size:.72rem;color:var(--muted);font-family:'Space Mono',monospace}
-.gtoggle{display:flex;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.gbtn{padding:7px 16px;font-size:.72rem;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;letter-spacing:.4px}
-.gbtn.act{background:var(--g2);color:var(--g7)}
+header{display:flex;align-items:center;justify-content:space-between;padding:22px 0 24px;
+  border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:12px}
+.bico{width:46px;height:46px;background:linear-gradient(135deg,var(--g3),var(--g6));border-radius:13px;
+  display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 0 24px rgba(82,196,122,.3)}
+.brand h1{font-size:1.25rem;font-weight:800;color:var(--g7);letter-spacing:-1px;line-height:1.1}
+.brand p{font-size:.68rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hbadge{display:flex;align-items:center;gap:6px;border:1px solid rgba(82,196,122,.22);border-radius:99px;
+  padding:5px 14px;font-size:.72rem;font-family:'Space Mono',monospace}
+.dot{width:7px;height:7px;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(82,196,122,.5)}50%{box-shadow:0 0 0 5px rgba(82,196,122,0)}}
+#upd{font-size:.7rem;color:var(--muted);font-family:'Space Mono',monospace}
 
 /* SENSOR CARDS */
-.sr{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.sc2{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px 16px;backdrop-filter:blur(14px);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
-.sc2:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(0,0,0,.35)}
-.sc2 .bgico{position:absolute;right:12px;top:10px;font-size:54px;opacity:.055;pointer-events:none;line-height:1}
-.slbl{font-size:.67rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px;font-weight:600}
-.sval{font-family:'Space Mono',monospace;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:6px}
-.cu{font-size:.85rem;color:var(--muted);font-weight:400}
-.sbar{width:100%;height:5px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-top:8px}
+.sr{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 16px 14px;backdrop-filter:blur(12px);position:relative;overflow:hidden;transition:transform .2s}
+.sc:hover{transform:translateY(-2px)}
+.sc .bg{position:absolute;right:10px;top:8px;font-size:48px;opacity:.05;pointer-events:none}
+.slbl{font-size:.63rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:7px;font-weight:600}
+.sval{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;line-height:1;margin-bottom:5px}
+.cu{font-size:.8rem;color:var(--muted);font-weight:400}
+.sbar{width:100%;height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-top:7px}
 .sbf{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.strend{font-size:.72rem;color:var(--muted);margin-top:6px}
-.ct2{color:var(--amber)}.ct2 .sbf{background:linear-gradient(90deg,#f07b1d,var(--amber))}
-.csd .sval{font-size:1.05rem;line-height:1.35;color:var(--g6)} .csd .sbf{background:linear-gradient(90deg,#1a7a3e,var(--g5))}
-.csd.sd-error .sval{color:var(--red)}   .csd.sd-error .sbf{background:linear-gradient(90deg,#7a1a1a,var(--red))}
-.csd.sd-warn  .sval{color:var(--amber)} .csd.sd-warn  .sbf{background:linear-gradient(90deg,#7a4a1a,var(--amber))}
-.ch2{color:var(--blue)} .ch2 .sbf{background:linear-gradient(90deg,#1db8d6,var(--blue))}
-.cs2{color:var(--g6)}   .cs2 .sbf{background:linear-gradient(90deg,var(--g3),var(--g6))}
-.cst{color:var(--lime)}  .cst .sval{font-size:1.1rem;line-height:1.3} .cst .sbf{background:linear-gradient(90deg,var(--lime),#eeff90)}
+.str{font-size:.68rem;color:var(--muted);margin-top:5px}
+.ct{color:var(--amber)}.ct .sbf{background:linear-gradient(90deg,#f07b1d,var(--amber))}
+.ch{color:var(--blue)}.ch .sbf{background:linear-gradient(90deg,#1db8d6,var(--blue))}
+.cs{color:var(--g6)}.cs .sbf{background:linear-gradient(90deg,var(--g3),var(--g6))}
+.cx{color:var(--lime)}.cx .sval{font-size:1rem;line-height:1.3}
+.csd .sval{font-size:.9rem;color:var(--muted)}
 
 /* CHARTS */
-.chrow{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(14px);overflow:hidden}
-.ph{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 13px;border-bottom:1px solid var(--border)}
-.pt{font-size:.82rem;font-weight:700;color:var(--g7);display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace}
-.pt i{width:7px;height:7px;border-radius:50%;background:var(--g5);display:inline-block}
-.chtabs{display:flex;gap:4px}
-.ctb{padding:5px 12px;border-radius:8px;font-size:.68rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;font-family:'Syne',sans-serif}
+.chrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(12px);overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 11px;border-bottom:1px solid var(--border)}
+.pt{font-size:.78rem;font-weight:700;color:var(--g7);display:flex;align-items:center;gap:7px;font-family:'Space Mono',monospace}
+.pt i{width:6px;height:6px;border-radius:50%;background:var(--g5);display:inline-block}
+.ctabs{display:flex;gap:3px}
+.ctb{padding:4px 11px;border-radius:7px;font-size:.65rem;font-weight:700;cursor:pointer;
+  border:none;background:transparent;color:var(--muted);transition:all .2s;font-family:'Syne',sans-serif}
 .ctb.act{background:var(--g2);color:var(--g7)}
-.cbox{padding:16px 18px;height:230px;position:relative}
+.cbox{padding:14px 16px;height:220px}
 
-/* ACTUATOR */
-.asec{margin-bottom:18px}
-.asec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.asec-hd h2{font-size:1rem;font-weight:800;color:var(--g7);display:flex;align-items:center;gap:10px}
-.asec-hd h2::before{content:'';width:4px;height:20px;background:linear-gradient(var(--g5),var(--lime));border-radius:2px;display:block}
-.ainfo{font-size:.7rem;color:var(--muted);font-family:'Space Mono',monospace;background:rgba(82,196,122,.07);border:1px solid var(--border);border-radius:8px;padding:5px 12px}
-.agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+/* ACTUATOR GRID */
+.asec{margin-bottom:16px}
+.asec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.asec-hd h2{font-size:.95rem;font-weight:800;color:var(--g7);display:flex;align-items:center;gap:9px}
+.asec-hd h2::before{content:'';width:4px;height:18px;background:linear-gradient(var(--g5),var(--lime));border-radius:2px;display:block}
+.agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 
-/* Actuator Card */
-.acard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;backdrop-filter:blur(14px);transition:all .25s}
-.acard.on{border-color:rgba(82,196,122,.4);background:rgba(15,50,28,.8);box-shadow:0 0 28px rgba(82,196,122,.1)}
-.acard.warn.on{border-color:rgba(255,173,59,.4);background:rgba(40,25,5,.8);box-shadow:0 0 28px rgba(255,173,59,.1)}
-.acard.cool.on{border-color:rgba(67,217,245,.4);background:rgba(5,25,40,.8);box-shadow:0 0 28px rgba(67,217,245,.12)}
-.acard.nutr.on{border-color:rgba(181,123,255,.4);background:rgba(20,5,40,.8);box-shadow:0 0 28px rgba(181,123,255,.1)}
-.atop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
-.aico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(255,255,255,.05);transition:all .3s;margin-bottom:8px}
-.acard.on     .aico{background:rgba(82,196,122,.15);box-shadow:0 0 16px rgba(82,196,122,.25)}
-.acard.warn.on .aico{background:rgba(255,173,59,.15);box-shadow:0 0 16px rgba(255,173,59,.25)}
-.acard.cool.on .aico{background:rgba(67,217,245,.15);box-shadow:0 0 16px rgba(67,217,245,.25)}
-.acard.nutr.on .aico{background:rgba(181,123,255,.15);box-shadow:0 0 16px rgba(181,123,255,.25)}
-.aname{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:3px}
-.asub{font-size:.68rem;color:var(--muted);letter-spacing:.5px}
-/* Status pill read-only (pengganti toggle) */
-.status-pill{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:6px 14px;border-radius:99px;font-size:.72rem;
-  font-family:'Space Mono',monospace;font-weight:700;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.05);color:var(--dim);
-  transition:all .4s;letter-spacing:.5px;
-}
-.acard.on     .status-pill{background:rgba(82,196,122,.15); border-color:rgba(82,196,122,.35); color:var(--g6)}
-.acard.warn.on .status-pill{background:rgba(255,173,59,.15); border-color:rgba(255,173,59,.35); color:var(--amber)}
-.acard.cool.on .status-pill{background:rgba(67,217,245,.15); border-color:rgba(67,217,245,.35); color:var(--blue)}
-.acard.nutr.on .status-pill{background:rgba(181,123,255,.15);border-color:rgba(181,123,255,.35);color:var(--violet)}
-/* Mode badge */
-.mbadge{display:inline-flex;align-items:center;gap:5px;font-size:.64rem;font-family:'Space Mono',monospace;padding:3px 9px;border-radius:6px;font-weight:700;margin-bottom:10px}
+.acard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 16px;backdrop-filter:blur(12px);transition:all .25s}
+.acard.on{border-color:rgba(82,196,122,.4);background:rgba(15,50,28,.85);box-shadow:0 0 28px rgba(82,196,122,.12)}
+.acard.cool.on{border-color:rgba(67,217,245,.4);background:rgba(5,25,40,.85);box-shadow:0 0 28px rgba(67,217,245,.12)}
+.acard.warn.on{border-color:rgba(255,173,59,.4);background:rgba(40,25,5,.85);box-shadow:0 0 28px rgba(255,173,59,.12)}
+.acard.nutr.on{border-color:rgba(181,123,255,.4);background:rgba(20,5,40,.85);box-shadow:0 0 28px rgba(181,123,255,.12)}
+
+.atop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.aico{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;background:rgba(255,255,255,.05);margin-bottom:6px;transition:all .3s}
+.acard.on .aico{background:rgba(82,196,122,.15);box-shadow:0 0 14px rgba(82,196,122,.25)}
+.acard.cool.on .aico{background:rgba(67,217,245,.15);box-shadow:0 0 14px rgba(67,217,245,.25)}
+.acard.warn.on .aico{background:rgba(255,173,59,.15);box-shadow:0 0 14px rgba(255,173,59,.25)}
+.acard.nutr.on .aico{background:rgba(181,123,255,.15);box-shadow:0 0 14px rgba(181,123,255,.25)}
+.aname{font-size:.88rem;font-weight:700;color:var(--txt);margin-bottom:2px}
+.asub{font-size:.62rem;color:var(--muted)}
+
+.spill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;
+  font-size:.68rem;font-family:'Space Mono',monospace;font-weight:700;
+  border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:var(--dim);transition:all .4s}
+.acard.on .spill{background:rgba(82,196,122,.15);border-color:rgba(82,196,122,.35);color:var(--g6)}
+.acard.cool.on .spill{background:rgba(67,217,245,.15);border-color:rgba(67,217,245,.35);color:var(--blue)}
+.acard.warn.on .spill{background:rgba(255,173,59,.15);border-color:rgba(255,173,59,.35);color:var(--amber)}
+.acard.nutr.on .spill{background:rgba(181,123,255,.15);border-color:rgba(181,123,255,.35);color:var(--violet)}
+
+.mbadge{display:inline-flex;align-items:center;font-size:.6rem;font-family:'Space Mono',monospace;
+  padding:2px 8px;border-radius:5px;font-weight:700;margin-bottom:8px;transition:all .3s}
 .mba{background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)}
-/* Condition bar */
-.condbar{margin-top:10px}
-.condlbl{display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace}
-.condtrk{height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
-.condfill{height:100%;border-radius:99px;transition:width 1s ease}
-/* Status row */
-.statrow{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
-.astat{display:flex;align-items:center;gap:6px;font-size:.7rem;font-family:'Space Mono',monospace}
-.adot{width:7px;height:7px;border-radius:50%;background:var(--dim);transition:all .4s}
-.acard.on     .adot{background:var(--g5);box-shadow:0 0 6px var(--g5)}
-.acard.warn.on .adot{background:var(--amber);box-shadow:0 0 6px var(--amber)}
-.acard.cool.on .adot{background:var(--blue);box-shadow:0 0 6px var(--blue)}
-.acard.nutr.on .adot{background:var(--violet);box-shadow:0 0 6px var(--violet)}
+.mmn{background:rgba(255,173,59,.1);color:var(--amber);border:1px solid rgba(255,173,59,.2)}
+.mmv{background:rgba(181,123,255,.1);color:var(--violet);border:1px solid rgba(181,123,255,.18)}
+
+.cbar{margin-top:8px}
+.clbl{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-bottom:3px;font-family:'Space Mono',monospace}
+.ctrk{height:3px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+.cfill{height:100%;border-radius:99px;transition:width 1s ease}
+.srow{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.astat{display:flex;align-items:center;gap:5px;font-size:.67rem;font-family:'Space Mono',monospace}
+.adot{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:all .4s}
+.acard.on .adot{background:var(--g5);box-shadow:0 0 5px var(--g5)}
+.acard.cool.on .adot{background:var(--blue);box-shadow:0 0 5px var(--blue)}
+.acard.warn.on .adot{background:var(--amber);box-shadow:0 0 5px var(--amber)}
+.acard.nutr.on .adot{background:var(--violet);box-shadow:0 0 5px var(--violet)}
 @keyframes spin{to{transform:rotate(360deg)}}
-.acard.on .spn{display:inline-block;animation:spin .7s linear infinite}
+.acard.on .spn{display:inline-block;animation:spin .8s linear infinite}
+.hint{font-size:.58rem;color:var(--muted);font-family:'Space Mono',monospace}
 
-/* BOTTOM ROW */
-.botrow{display:grid;grid-template-columns:1fr 380px;gap:18px}
-.hist-body{padding:0 20px 18px;max-height:300px;overflow-y:auto}
-.hist-body::-webkit-scrollbar{width:3px}
-.hist-body::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
+/* ── KONTROL POMPA AIR (3 tombol: AUTO / ON / OFF) ── */
+.ctrl-wrap{margin-top:11px;padding-top:11px;border-top:1px solid rgba(255,255,255,.06)}
+.ctrl-title{font-size:.62rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px}
+.pump-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px}
+.pbtn{padding:7px 0;border-radius:8px;font-family:'Syne',sans-serif;font-size:.72rem;
+  font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);color:var(--muted);transition:all .2s}
+.pbtn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.15)}
+.pbtn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.pbtn.auto.sel{background:rgba(212,255,78,.15);border-color:rgba(212,255,78,.4);color:var(--lime)}
+.pbtn.pon.sel {background:rgba(67,217,245,.15);border-color:rgba(67,217,245,.4);color:var(--blue)}
+.pbtn.poff.sel{background:rgba(255,82,82,.12); border-color:rgba(255,82,82,.38);color:var(--red)}
+
+/* ── KONTROL POMPA NUTRISI (2 tombol: ON / OFF) ── */
+.nutr-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px}
+.nbtn{padding:7px 0;border-radius:8px;font-family:'Syne',sans-serif;font-size:.72rem;
+  font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);color:var(--muted);transition:all .2s}
+.nbtn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.15)}
+.nbtn:disabled{opacity:.4;cursor:not-allowed}
+.nbtn.non.sel {background:rgba(181,123,255,.2);border-color:rgba(181,123,255,.5);color:var(--violet)}
+.nbtn.noff.sel{background:rgba(255,82,82,.12);border-color:rgba(255,82,82,.38);color:var(--red)}
+
+.ctrl-hint{font-size:.58rem;color:var(--dim);font-family:'Space Mono',monospace;text-align:center;margin-bottom:4px}
+.ctrl-fb{font-size:.63rem;font-family:'Space Mono',monospace;padding:4px 8px;border-radius:6px;
+  text-align:center;opacity:0;transition:opacity .3s;min-height:22px}
+.ctrl-fb.show{opacity:1}
+.ctrl-fb.ok  {background:rgba(82,196,122,.1);color:var(--g6);border:1px solid rgba(82,196,122,.2)}
+.ctrl-fb.err {background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)}
+.ctrl-fb.wait{background:rgba(67,217,245,.08);color:var(--blue);border:1px solid rgba(67,217,245,.18)}
+
+/* BOTTOM */
+.botrow{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-bottom:16px}
+.hbody,.lbody{overflow-y:auto;max-height:260px}
+.hbody{padding:0 18px 16px}
+.lbody{padding:12px 18px 16px}
+.hbody::-webkit-scrollbar,.lbody::-webkit-scrollbar{width:3px}
+.hbody::-webkit-scrollbar-thumb,.lbody::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
 table{width:100%;border-collapse:collapse}
-thead th{padding:9px 8px;text-align:left;font-size:.62rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);font-weight:700;position:sticky;top:0;background:var(--bg1);z-index:1}
-tbody tr{border-top:1px solid rgba(82,196,122,.06);transition:background .15s}
-tbody tr:hover{background:rgba(82,196,122,.05)}
-tbody td{padding:9px 8px;font-family:'Space Mono',monospace;font-size:.7rem}
-.badge{padding:2px 9px;border-radius:99px;font-size:.62rem;font-weight:700;display:inline-block}
-.bn{background:rgba(82,196,122,.12);color:var(--g6)}
-.bw{background:rgba(255,173,59,.12);color:var(--amber)}
-.bd{background:rgba(255,82,82,.12);color:var(--red)}
-/* Log */
-.logbody{padding:14px 20px 18px;max-height:300px;overflow-y:auto}
-.logbody::-webkit-scrollbar{width:3px}
-.logbody::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
-.logi{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(82,196,122,.07);animation:sli .3s ease both}
-@keyframes sli{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+thead th{padding:8px 6px;text-align:left;font-size:.58rem;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--dim);font-weight:700;position:sticky;top:0;background:var(--bg1);z-index:1}
+tbody tr{border-top:1px solid rgba(82,196,122,.05);transition:background .15s}
+tbody tr:hover{background:rgba(82,196,122,.04)}
+tbody td{padding:7px 6px;font-family:'Space Mono',monospace;font-size:.64rem}
+.bdg{padding:2px 7px;border-radius:99px;font-size:.58rem;font-weight:700;display:inline-block}
+.bn{background:rgba(82,196,122,.12);color:var(--g6)}.bw{background:rgba(255,173,59,.12);color:var(--amber)}.bd{background:rgba(255,82,82,.12);color:var(--red)}
+.logi{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid rgba(82,196,122,.06);animation:sli .3s ease both}
+@keyframes sli{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:none}}
 .logi:last-child{border-bottom:none}
-.liico{font-size:1.1rem;flex-shrink:0;margin-top:2px}
-.limsg{font-size:.77rem;color:var(--txt);margin-bottom:2px}
-.litm{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
-/* Footer */
-footer{border-top:1px solid var(--border);padding:18px 0;display:flex;justify-content:space-between;align-items:center;margin-top:28px;flex-wrap:wrap;gap:8px}
-footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
-/* Fade up */
-.fu{opacity:0;transform:translateY(18px);animation:fu .45s ease forwards}
-@keyframes fu{to{opacity:1;transform:translateY(0)}}
-.d1{animation-delay:.07s}.d2{animation-delay:.14s}.d3{animation-delay:.21s}
-.d4{animation-delay:.28s}.d5{animation-delay:.35s}.d6{animation-delay:.42s}
-/* Summary panel */
-.sumpanel{padding:18px;display:flex;flex-direction:column;justify-content:space-between;min-height:200px}
-/* Responsive */
+.liico{font-size:1rem;flex-shrink:0;margin-top:1px}
+.limsg{font-size:.72rem;color:var(--txt);margin-bottom:1px}
+.litm{font-size:.59rem;color:var(--dim);font-family:'Space Mono',monospace}
+
+/* SHEETS PANEL */
+.sheets-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  backdrop-filter:blur(12px);overflow:hidden;margin-bottom:16px}
+.sh-body{padding:18px 20px}
+.sh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.sh-stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.sh-num{font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700;line-height:1}
+.sh-lbl{font-size:.6rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:1px}
+.sh-status{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);font-size:.7rem;
+  font-family:'Space Mono',monospace;color:var(--muted);transition:all .3s;margin-bottom:12px}
+.sh-status.ok  {background:rgba(82,196,122,.08);border-color:rgba(82,196,122,.25);color:var(--g6)}
+.sh-status.err {background:rgba(255,82,82,.08); border-color:rgba(255,82,82,.25); color:var(--red)}
+.sh-status.wait{background:rgba(67,217,245,.06);border-color:rgba(67,217,245,.2); color:var(--blue)}
+.sh-log-list{max-height:140px;overflow-y:auto}
+.sh-log-list::-webkit-scrollbar{width:3px}
+.sh-log-list::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
+.sh-log-item{display:flex;align-items:center;gap:8px;padding:7px 0;
+  border-bottom:1px solid rgba(82,196,122,.05);font-size:.68rem}
+.sh-log-item:last-child{border-bottom:none}
+.sh-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sh-dot.ok{background:var(--g5)}.sh-dot.err{background:var(--red)}
+.sh-val{font-family:'Space Mono',monospace;color:var(--txt);flex:1}
+.sh-time{font-size:.59rem;color:var(--dim);font-family:'Space Mono',monospace;flex-shrink:0}
+
+footer{border-top:1px solid var(--border);padding:16px 0;
+  display:flex;justify-content:space-between;margin-top:24px;flex-wrap:wrap;gap:6px}
+footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
+
+.fu{opacity:0;transform:translateY(14px);animation:fu .4s ease forwards}
+@keyframes fu{to{opacity:1;transform:none}}
+.d1{animation-delay:.06s}.d2{animation-delay:.12s}.d3{animation-delay:.18s}.d4{animation-delay:.24s}.d5{animation-delay:.30s}
 @media(max-width:1100px){.agrid{grid-template-columns:repeat(2,1fr)}.botrow{grid-template-columns:1fr}}
-@media(max-width:760px){.sr{grid-template-columns:1fr 1fr}.chrow{grid-template-columns:1fr}.agrid{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.agrid{grid-template-columns:1fr}}
-
-/* ── GOOGLE SHEETS PANEL ── */
-.sheets-section{margin-bottom:18px}
-.sheets-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(14px);overflow:hidden}
-.sheets-body{padding:20px 24px 22px;display:flex;flex-direction:column;gap:16px}
-
-/* Big log button */
-.log-btn{
-  display:flex;align-items:center;justify-content:center;gap:12px;
-  width:100%;padding:16px 24px;border-radius:14px;border:none;cursor:pointer;
-  background:linear-gradient(135deg,#1a7a3e,#25a856);
-  color:#fff;font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
-  letter-spacing:.3px;transition:all .2s;position:relative;overflow:hidden;
-}
-.log-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);
-  opacity:0;transition:opacity .2s;
-}
-.log-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 32px rgba(37,168,86,.4)}
-.log-btn:hover:not(:disabled)::before{opacity:1}
-.log-btn:active:not(:disabled){transform:translateY(0)}
-.log-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.log-btn .btn-ico{font-size:1.3rem;flex-shrink:0}
-.log-btn .btn-spinner{
-  width:18px;height:18px;border:2px solid rgba(255,255,255,.3);
-  border-top-color:#fff;border-radius:50%;
-  animation:spin .7s linear infinite;display:none;flex-shrink:0;
-}
-.log-btn.loading .btn-spinner{display:block}
-.log-btn.loading .btn-ico{display:none}
-
-/* Auto log toggle row */
-.autolog-row{
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(255,255,255,.03);border:1px solid var(--border);
-  border-radius:12px;padding:12px 16px;
-}
-.autolog-info{display:flex;flex-direction:column;gap:3px}
-.autolog-title{font-size:.82rem;font-weight:700;color:var(--txt)}
-.autolog-sub{font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace}
-
-/* Status strip */
-.sheets-status{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 14px;border-radius:10px;
-  background:rgba(255,255,255,.03);border:1px solid var(--border);
-  font-size:.73rem;font-family:'Space Mono',monospace;color:var(--muted);
-  transition:all .4s;
-}
-.sheets-status.success{background:rgba(82,196,122,.1);border-color:rgba(82,196,122,.3);color:var(--g6)}
-.sheets-status.error  {background:rgba(255,82,82,.1); border-color:rgba(255,82,82,.3); color:var(--red)}
-.sheets-status.sending{background:rgba(67,217,245,.08);border-color:rgba(67,217,245,.2);color:var(--blue)}
-.sstat-ico{font-size:1rem;flex-shrink:0}
-
-/* Log counter badges row */
-.log-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.lstat-item{
-  background:rgba(255,255,255,.03);border:1px solid var(--border);
-  border-radius:10px;padding:10px 12px;text-align:center;
-}
-.lstat-num{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--lime);line-height:1}
-.lstat-lbl{font-size:.62rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
-
-/* Sheets log preview */
-.sheets-log-wrap{max-height:180px;overflow-y:auto}
-.sheets-log-wrap::-webkit-scrollbar{width:3px}
-.sheets-log-wrap::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
-.slog-item{
-  display:flex;align-items:center;gap:10px;padding:8px 0;
-  border-bottom:1px solid rgba(82,196,122,.06);font-size:.72rem;
-  animation:sli .3s ease both;
-}
-.slog-item:last-child{border-bottom:none}
-.slog-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.slog-dot.ok  {background:var(--g5)}
-.slog-dot.err {background:var(--red)}
-.slog-dot.pend{background:var(--amber)}
-.slog-val{font-family:'Space Mono',monospace;color:var(--txt);flex:1}
-.slog-time{font-size:.62rem;color:var(--dim);font-family:'Space Mono',monospace;flex-shrink:0}
-
-/* Sheets link button */
-.open-sheets-btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:9px 18px;border-radius:10px;border:1px solid rgba(82,196,122,.25);
-  background:rgba(82,196,122,.07);color:var(--g6);
-  font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;
-  cursor:pointer;transition:all .2s;text-decoration:none;
-}
-.open-sheets-btn:hover{background:rgba(82,196,122,.15);transform:translateY(-1px)}
+@media(max-width:760px){.sr{grid-template-columns:1fr 1fr}.chrow{grid-template-columns:1fr}}
+@media(max-width:480px){.sr{grid-template-columns:1fr}.agrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -270,66 +223,61 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
   <div class="brand">
     <div class="bico">🌿</div>
     <div>
-      <h1>Mini Greenhouse</h1>
-      <p>Smart Control · ESP32 + Firebase</p>
+      <h1>Smart Greenhouse</h1>
+      <p>v3.0 · ESP32 · Firebase · Sheets · Manual+Auto</p>
     </div>
   </div>
   <div class="hdr-r">
-    <div class="livebadge" style="background:rgba(212,255,78,.1);border-color:rgba(212,255,78,.25);color:var(--lime)">
-      <div class="pdot" style="background:var(--lime)"></div>⚙ FULL AUTO
+    <div class="hbadge" style="background:rgba(212,255,78,.08);border-color:rgba(212,255,78,.2);color:var(--lime)">
+      <div class="dot" style="background:var(--lime)"></div>LIVE
     </div>
-    <div class="livebadge"><div class="pdot"></div>LIVE</div>
-    <div class="upd" id="upd">--:--:--</div>
+    <div class="hbadge" style="background:rgba(82,196,122,.08);color:var(--g6)">
+      <div class="dot" style="background:var(--g6)"></div>Firebase
+    </div>
+    <span id="upd">--:--:--</span>
   </div>
 </header>
 
 <!-- SENSOR CARDS -->
-<div class="sr" style="grid-template-columns:repeat(5,1fr)">
-  <div class="sc2 ct2 fu d1">
-    <div class="bgico">🌡️</div>
+<div class="sr fu d1">
+  <div class="sc ct"><div class="bg">🌡️</div>
     <div class="slbl">Suhu Udara</div>
     <div class="sval" id="vT">—<span class="cu"> °C</span></div>
     <div class="sbar"><div class="sbf" id="bT" style="width:0%"></div></div>
-    <div class="strend" id="trT">— Menunggu data</div>
+    <div class="str" id="trT">Menunggu…</div>
   </div>
-  <div class="sc2 ch2 fu d2">
-    <div class="bgico">💧</div>
+  <div class="sc ch"><div class="bg">💧</div>
     <div class="slbl">Kelembaban Udara</div>
     <div class="sval" id="vH">—<span class="cu"> %</span></div>
     <div class="sbar"><div class="sbf" id="bH" style="width:0%"></div></div>
-    <div class="strend" id="trH">Optimal 40–80%</div>
+    <div class="str">Optimal 40–80%</div>
   </div>
-  <div class="sc2 cs2 fu d3">
-    <div class="bgico">🌱</div>
+  <div class="sc cs"><div class="bg">🌱</div>
     <div class="slbl">Kelembaban Tanah</div>
     <div class="sval" id="vS">—<span class="cu"> %</span></div>
     <div class="sbar"><div class="sbf" id="bS" style="width:0%"></div></div>
-    <div class="strend" id="trS">— Menunggu data</div>
+    <div class="str" id="trS">Menunggu…</div>
   </div>
-  <div class="sc2 cst fu d4">
-    <div class="bgico">📡</div>
+  <div class="sc cx"><div class="bg">📡</div>
     <div class="slbl">Status Sistem</div>
-    <div class="sval" id="vSt">⏳ Menunggu…</div>
-    <div class="sbar"><div class="sbf" id="bSt" style="width:100%"></div></div>
-    <div class="strend">Firebase: <span style="color:var(--g6)">Connected</span></div>
+    <div class="sval" id="vSt" style="font-size:1rem;line-height:1.3">⏳ Menunggu…</div>
+    <div class="sbar"><div class="sbf" id="bSt" style="width:100%;background:var(--dim)"></div></div>
+    <div class="str">FB: <span id="fbTxt" style="color:var(--muted)">Menghubungkan…</span></div>
   </div>
-  <!-- SD CARD -->
-  <div class="sc2 csd fu d5" id="sdCard">
-    <div class="bgico">💾</div>
-    <div class="slbl">Status SD Card</div>
-    <div class="sval" id="vSD">⏳ Menunggu…</div>
-    <div class="sbar"><div class="sbf" id="bSD" style="width:0%"></div></div>
-    <div class="strend" id="trSD">Menunggu data dari Firebase</div>
+  <div class="sc csd"><div class="bg">💾</div>
+    <div class="slbl">SD Card</div>
+    <div class="sval">⏭ SKIP</div>
+    <div class="sbar"><div class="sbf" style="width:20%;background:var(--dim)"></div></div>
+    <div class="str" style="color:var(--dim)">Tidak dipasang</div>
   </div>
 </div>
 
-<!-- CHARTS ROW -->
-<div class="chrow fu d3">
-  <!-- Main chart -->
+<!-- CHARTS -->
+<div class="chrow fu d2">
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Grafik Sensor Realtime</div>
-      <div class="chtabs">
+      <div class="ctabs">
         <button class="ctb act" onclick="swCh('temp',this)">Suhu</button>
         <button class="ctb" onclick="swCh('hum',this)">Kelembaban</button>
         <button class="ctb" onclick="swCh('all',this)">Semua</button>
@@ -337,200 +285,149 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
     </div>
     <div class="cbox"><canvas id="mc"></canvas></div>
   </div>
-  <!-- Soil chart -->
   <div class="panel">
     <div class="ph">
-      <div class="pt"><i></i>Grafik Kelembaban Tanah</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:20px;height:2px;background:rgba(255,82,82,.6);border-radius:1px"></div>
-        <span style="font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace">Batas 40%</span>
-      </div>
+      <div class="pt"><i></i>Kelembaban Tanah</div>
+      <span style="display:flex;align-items:center;gap:6px;font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">
+        <span style="width:16px;height:2px;background:rgba(255,82,82,.5);display:inline-block;border-radius:1px"></span>Batas 40%
+      </span>
     </div>
     <div class="cbox"><canvas id="sc"></canvas></div>
   </div>
 </div>
 
-<!-- ACTUATOR PANEL -->
-<div class="asec fu d4">
+<!-- AKTUATOR -->
+<div class="asec fu d3">
   <div class="asec-hd">
     <h2>Status Aktuator</h2>
-    <div class="ainfo">⚙ FULL AUTO · Semua aktuator dikendalikan otomatis oleh sistem</div>
+    <span style="font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace;
+      background:rgba(82,196,122,.06);border:1px solid var(--border);border-radius:7px;padding:3px 10px">
+      Peltier & Fan = Auto · Pompa Air & Nutrisi = Manual + Auto
+    </span>
   </div>
   <div class="agrid">
-
-    <!-- WATER PUMP -->
-    <div class="acard warn" id="ac-pump">
-      <div class="atop">
-        <div>
-          <div class="aico">💧</div>
-          <div class="aname">Water Pump</div>
-          <div class="asub">IRIGASI TANAMAN</div>
-        </div>
-        <div class="status-pill" id="sp-pump">⭕ OFF</div>
-      </div>
-      <div class="mbadge mba">⚙ AUTO</div>
-      <div class="condbar">
-        <div class="condlbl"><span>Soil Moisture</span><span id="cv-pump">—</span></div>
-        <div class="condtrk"><div class="condfill" id="cf-pump" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
-      </div>
-      <div class="statrow">
-        <div class="astat"><div class="adot"></div><span id="as-pump">STANDBY</span></div>
-        <span style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">ON jika &lt;40%</span>
-      </div>
-    </div>
-
-    <!-- PERISTALTIC PUMP -->
-    <div class="acard nutr" id="ac-nutr">
-      <div class="atop">
-        <div>
-          <div class="aico">🧪</div>
-          <div class="aname">Peristaltik Pump</div>
-          <div class="asub">NUTRISI TANAMAN</div>
-        </div>
-        <div class="status-pill" id="sp-nutr">⭕ OFF</div>
-      </div>
-      <div class="mbadge mba">⚙ AUTO · ESP32</div>
-      <div class="condbar">
-        <div class="condlbl"><span>Status Firebase</span><span id="cv-nutr">Menunggu…</span></div>
-        <div class="condtrk"><div class="condfill" id="cf-nutr" style="width:0%;background:linear-gradient(90deg,#8b3bff,var(--violet))"></div></div>
-      </div>
-      <div class="statrow">
-        <div class="astat"><div class="adot"></div><span id="as-nutr">STANDBY</span></div>
-      </div>
-      <!-- Tombol Manual Control ke /Control/PompaNutrisi -->
-      <div style="display:flex;gap:8px;margin-top:12px;border-top:1px solid rgba(181,123,255,.15);padding-top:12px">
-        <button id="btn-nutr-on"
-          onclick="sendNutrisi(1)"
-          style="flex:1;padding:7px 0;border-radius:8px;border:1px solid rgba(181,123,255,.35);
-                 background:rgba(181,123,255,.15);color:var(--violet);font-family:'Syne',sans-serif;
-                 font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s">
-          ▶ ON Manual
-        </button>
-        <button id="btn-nutr-off"
-          onclick="sendNutrisi(0)"
-          style="flex:1;padding:7px 0;border-radius:8px;border:1px solid rgba(255,255,255,.1);
-                 background:rgba(255,255,255,.05);color:var(--muted);font-family:'Syne',sans-serif;
-                 font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s">
-          ■ OFF
-        </button>
-      </div>
-      <div style="font-size:.6rem;color:var(--dim);font-family:'Space Mono',monospace;margin-top:6px;text-align:center">
-        Kirim ke /Control/PompaNutrisi
-      </div>
-    </div>
-
-    <!-- FAN -->
-    <div class="acard cool" id="ac-fan1">
-      <div class="atop">
-        <div>
-          <div class="aico"><span class="spn">🌀</span></div>
-          <div class="aname">Fan</div>
-          <div class="asub">SIRKULASI UDARA</div>
-        </div>
-        <div class="status-pill" id="sp-fan1">⭕ OFF</div>
-      </div>
-      <div class="mbadge mba">⚙ AUTO</div>
-      <div class="condbar">
-        <div class="condlbl"><span>Suhu Saat Ini</span><span id="cv-fan1">—</span></div>
-        <div class="condtrk"><div class="condfill" id="cf-fan1" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
-      </div>
-      <div class="statrow">
-        <div class="astat"><div class="adot"></div><span id="as-fan1">STANDBY</span></div>
-        <span style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">ON jika &gt;25°C</span>
-      </div>
-    </div>
-
-
 
     <!-- PELTIER -->
     <div class="acard cool" id="ac-pelt">
       <div class="atop">
-        <div>
-          <div class="aico">❄️</div>
-          <div class="aname">Peltier Cooler</div>
-          <div class="asub">PENDINGIN RUANG</div>
-        </div>
-        <div class="status-pill" id="sp-pelt">⭕ OFF</div>
+        <div><div class="aico">❄️</div><div class="aname">Peltier Cooler</div><div class="asub">GPIO 32 · 12V · Auto</div></div>
+        <div class="spill" id="sp-pelt">⭕ OFF</div>
       </div>
-      <div class="mbadge mba">⚙ AUTO</div>
-      <div class="condbar">
-        <div class="condlbl"><span>Suhu Saat Ini</span><span id="cv-pelt">—</span></div>
-        <div class="condtrk"><div class="condfill" id="cf-pelt" style="width:0%;background:linear-gradient(90deg,#006fd6,var(--blue))"></div></div>
+      <div class="mbadge mba">⚙ AUTO · Suhu &gt;25°C</div>
+      <div class="cbar">
+        <div class="clbl"><span>Suhu saat ini</span><span id="cv-pelt">—</span></div>
+        <div class="ctrk"><div class="cfill" id="cf-pelt" style="width:0%;background:linear-gradient(90deg,#006fd6,var(--blue))"></div></div>
       </div>
-      <div class="statrow">
+      <div class="srow">
         <div class="astat"><div class="adot"></div><span id="as-pelt">STANDBY</span></div>
-        <span style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">ON jika &gt;25°C</span>
+        <span class="hint">ON jika &gt;25°C</span>
       </div>
     </div>
 
-    <!-- SUMMARY -->
-    <div class="panel sumpanel">
-      <div>
-        <div class="pt" style="margin-bottom:14px"><i></i>Ringkasan Sistem</div>
-        <div id="sumlist" style="display:flex;flex-direction:column;gap:8px"></div>
+    <!-- FAN -->
+    <div class="acard cool" id="ac-fan">
+      <div class="atop">
+        <div><div class="aico"><span class="spn">🌀</span></div><div class="aname">Fan</div><div class="asub">GPIO 25 · 12V · Auto</div></div>
+        <div class="spill" id="sp-fan">⭕ OFF</div>
       </div>
-      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);text-align:center">
-        <div style="font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace;margin-bottom:4px">Health Score</div>
-        <div style="font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--lime)" id="hsc">90</div>
-        <div style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">/ 100 pts</div>
+      <div class="mbadge mba">⚙ AUTO · Suhu &gt;25°C</div>
+      <div class="cbar">
+        <div class="clbl"><span>Suhu saat ini</span><span id="cv-fan">—</span></div>
+        <div class="ctrk"><div class="cfill" id="cf-fan" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
+      </div>
+      <div class="srow">
+        <div class="astat"><div class="adot"></div><span id="as-fan">STANDBY</span></div>
+        <span class="hint">ON jika &gt;25°C</span>
       </div>
     </div>
 
-  </div><!-- /agrid -->
-</div><!-- /asec -->
-
-<!-- GOOGLE SHEETS LOGGING PANEL -->
-<div class="sheets-section fu d5">
-  <div class="sheets-panel">
-    <div class="ph">
-      <div class="pt"><i></i>📊 Data Logging · Google Sheets</div>
-      <a class="open-sheets-btn" href="https://script.google.com/macros/s/AKfycbx_nsewBlyonr523pOj5yj-vBRqK74WtYUtKfhFv8okY_zxflYD6FkQFXCIzGNo3Gby/exec" target="_blank">
-        🔗 Buka Spreadsheet
-      </a>
+    <!-- POMPA AIR — MANUAL + AUTO -->
+    <div class="acard warn" id="ac-pump">
+      <div class="atop">
+        <div><div class="aico">💧</div><div class="aname">Pompa Air</div><div class="asub">GPIO 16 · 5V</div></div>
+        <div class="spill" id="sp-pump">⭕ OFF</div>
+      </div>
+      <div class="mbadge" id="badge-pump" style="background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)">⚙ AUTO</div>
+      <div class="cbar">
+        <div class="clbl"><span>Kelembaban tanah</span><span id="cv-pump">—</span></div>
+        <div class="ctrk"><div class="cfill" id="cf-pump" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
+      </div>
+      <div class="srow">
+        <div class="astat"><div class="adot"></div><span id="as-pump">STANDBY</span></div>
+        <span class="hint" id="hint-pump">ON jika &lt;40%</span>
+      </div>
+      <!-- 3 TOMBOL KONTROL POMPA AIR -->
+      <div class="ctrl-wrap">
+        <div class="ctrl-title">⚡ Override Pompa Air</div>
+        <div class="pump-btns">
+          <button class="pbtn auto sel" id="pb-auto" onclick="setPompaAir(-1)">⚙ AUTO</button>
+          <button class="pbtn pon"      id="pb-on"   onclick="setPompaAir(1)">▶ ON</button>
+          <button class="pbtn poff"     id="pb-off"  onclick="setPompaAir(0)">■ OFF</button>
+        </div>
+        <div class="ctrl-hint">/Control/PompaAir → ESP32 GPIO16</div>
+        <div class="ctrl-fb" id="fb-pump"></div>
+      </div>
     </div>
-    <div class="sheets-body">
 
-      <!-- Auto log status bar (selalu aktif) -->
-      <div class="autolog-row">
-        <div class="autolog-info">
-          <div class="autolog-title">🔄 Auto Log Aktif</div>
-          <div class="autolog-sub" id="autologSub">Mencatat ke Sheets setiap data Firebase berubah</div>
-        </div>
-        <div class="status-pill" style="background:rgba(212,255,78,.1);border-color:rgba(212,255,78,.25);color:var(--lime)">
-          ⚙ OTOMATIS
-        </div>
+    <!-- POMPA NUTRISI -->
+    <div class="acard nutr" id="ac-nutr">
+      <div class="atop">
+        <div><div class="aico">🧪</div><div class="aname">Pompa Nutrisi</div><div class="asub">GPIO 27 · 5V</div></div>
+        <div class="spill" id="sp-nutr">⭕ OFF</div>
       </div>
-
-      <!-- Status strip -->
-      <div class="sheets-status" id="sheetsStatus">
-        <span class="sstat-ico">⏳</span>
-        <span id="sheetsStatusTxt">Menunggu data sensor dari Firebase…</span>
+      <div class="mbadge mmv">🖥 MANUAL</div>
+      <div class="cbar">
+        <div class="clbl"><span>Konfirmasi ESP32</span><span id="cv-nutr">Menunggu…</span></div>
+        <div class="ctrk"><div class="cfill" id="cf-nutr" style="width:0%;background:linear-gradient(90deg,#8b3bff,var(--violet))"></div></div>
       </div>
-
-      <!-- Stats row -->
-      <div class="log-stats">
-        <div class="lstat-item">
-          <div class="lstat-num" id="logTotal">0</div>
-          <div class="lstat-lbl">Total Log</div>
-        </div>
-        <div class="lstat-item">
-          <div class="lstat-num" id="logSuccess" style="color:var(--g6)">0</div>
-          <div class="lstat-lbl">Berhasil</div>
-        </div>
-        <div class="lstat-item">
-          <div class="lstat-num" id="logFail" style="color:var(--red)">0</div>
-          <div class="lstat-lbl">Gagal</div>
-        </div>
+      <div class="srow">
+        <div class="astat"><div class="adot"></div><span id="as-nutr">STANDBY</span></div>
+        <span class="hint">Dikonfirmasi ESP32</span>
       </div>
-
-      <!-- Log preview list -->
-      <div>
-        <div style="font-size:.68rem;color:var(--dim);font-family:'Space Mono',monospace;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Riwayat Pengiriman</div>
-        <div class="sheets-log-wrap" id="sheetsLogList">
-          <div style="font-size:.72rem;color:var(--dim);font-family:'Space Mono',monospace;padding:8px 0;text-align:center">Belum ada data terkirim</div>
+      <!-- 2 TOMBOL KONTROL POMPA NUTRISI -->
+      <div class="ctrl-wrap" style="border-top-color:rgba(181,123,255,.15)">
+        <div class="ctrl-title">⚡ Kontrol Nutrisi</div>
+        <div class="nutr-btns">
+          <button class="nbtn non"  id="nb-on"  onclick="setPompaNutrisi(1)">▶ ON</button>
+          <button class="nbtn noff sel" id="nb-off" onclick="setPompaNutrisi(0)">■ OFF</button>
         </div>
+        <div class="ctrl-hint">/Control/PompaNutrisi → ESP32 GPIO27</div>
+        <div class="ctrl-fb" id="fb-nutr"></div>
       </div>
+    </div>
 
+  </div>
+</div>
+
+<!-- GOOGLE SHEETS PANEL -->
+<div class="sheets-panel fu d4">
+  <div class="ph">
+    <div class="pt"><i></i>📊 Data Logging · Google Sheets</div>
+    <a href="https://script.google.com/macros/s/AKfycbx-1Oyl1GhkTBDz7AGsfqMmurSy_rkq1YLpcjKwymizLeBOWQnVfRLYIRvh4vJeWJ7n/exec"
+       target="_blank"
+       style="display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:9px;
+         border:1px solid rgba(82,196,122,.22);background:rgba(82,196,122,.07);color:var(--g6);
+         font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;text-decoration:none;transition:all .2s"
+       onmouseover="this.style.background='rgba(82,196,122,.15)'"
+       onmouseout="this.style.background='rgba(82,196,122,.07)'">
+      🔗 Buka Spreadsheet
+    </a>
+  </div>
+  <div class="sh-body">
+    <div class="sh-status" id="sh-status">
+      <span id="sh-ico">⏳</span>
+      <span id="sh-msg">Menunggu data dari Firebase…</span>
+    </div>
+    <div class="sh-stats">
+      <div class="sh-stat"><div class="sh-num" id="sh-total" style="color:var(--lime)">0</div><div class="sh-lbl">Total Log</div></div>
+      <div class="sh-stat"><div class="sh-num" id="sh-ok"    style="color:var(--g6)">0</div><div class="sh-lbl">Berhasil</div></div>
+      <div class="sh-stat"><div class="sh-num" id="sh-fail"  style="color:var(--red)">0</div><div class="sh-lbl">Gagal</div></div>
+    </div>
+    <div style="font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px">
+      Riwayat Pengiriman (otomatis setiap 10 detik via ESP32)
+    </div>
+    <div class="sh-log-list" id="sh-log-list">
+      <div style="font-size:.68rem;color:var(--dim);font-family:'Space Mono',monospace;padding:6px 0">Belum ada data…</div>
     </div>
   </div>
 </div>
@@ -540,11 +437,13 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Riwayat Data</div>
-      <button onclick="expCSV()" style="background:rgba(82,196,122,.1);border:1px solid rgba(82,196,122,.22);color:var(--g6);border-radius:8px;padding:5px 14px;font-size:.68rem;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif">⬇ CSV</button>
+      <button onclick="expCSV()" style="background:rgba(82,196,122,.1);border:1px solid rgba(82,196,122,.2);
+        color:var(--g6);border-radius:7px;padding:4px 12px;font-size:.65rem;font-weight:700;
+        cursor:pointer;font-family:'Syne',sans-serif">⬇ CSV</button>
     </div>
-    <div class="hist-body">
+    <div class="hbody">
       <table>
-        <thead><tr><th>Waktu</th><th>Suhu</th><th>Hum</th><th>Tanah</th><th>Pump</th><th>Fan</th><th>Peltier</th><th>Status</th></tr></thead>
+        <thead><tr><th>Waktu</th><th>Suhu</th><th>Hum</th><th>Tanah</th><th>Mode</th><th>PLT</th><th>Fan</th><th>Air</th><th>Nut</th><th>Status</th></tr></thead>
         <tbody id="hbody"></tbody>
       </table>
     </div>
@@ -552,478 +451,314 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Log Aktivitas</div>
-      <span style="font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace" id="lcnt">0 logs</span>
+      <span style="font-size:.62rem;color:var(--muted);font-family:'Space Mono',monospace" id="lcnt">0 log</span>
     </div>
-    <div class="logbody" id="lbody"></div>
+    <div class="lbody" id="lbody"></div>
   </div>
 </div>
 
 <footer>
-  <div>MINI-GH v2.0 · ESP32 + DHT22 + Soil Sensor + OLED · 5 Aktuator</div>
-  <div>Arduino · Firebase Realtime DB · © 2025</div>
+  <div>SMART GREENHOUSE v3.0 · ESP32 · DHT22 · Soil · 4 Relay · GPIO16 PompaAir</div>
+  <div>Firebase · Google Sheets · Boot Protection Fix · © 2025</div>
 </footer>
 </div>
 
 <script>
-// ─── GOOGLE SHEETS LOGGING ───────────────────────────
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx_nsewBlyonr523pOj5yj-vBRqK74WtYUtKfhFv8okY_zxflYD6FkQFXCIzGNo3Gby/exec';
+'use strict';
 
-let sheetsLogCount  = 0;
-let sheetsOkCount   = 0;
-let sheetsFailCount = 0;
-let sheetsLogItems  = [];
-let autoLogTimer    = null;
-
-// Set status strip
-function setSheetsStatus(type, msg){
-  const el  = document.getElementById('sheetsStatus');
-  const txt = document.getElementById('sheetsStatusTxt');
-  el.className = 'sheets-status ' + type;
-  const ico = {success:'✅', error:'🚨', sending:'📡', '':'⏳'}[type]||'⏳';
-  el.querySelector('.sstat-ico').textContent = ico;
-  txt.textContent = msg;
-}
-
-// Update counter badges
-function updateSheetsCounts(){
-  document.getElementById('logTotal').textContent   = sheetsLogCount;
-  document.getElementById('logSuccess').textContent = sheetsOkCount;
-  document.getElementById('logFail').textContent    = sheetsFailCount;
-}
-
-// Render riwayat pengiriman list
-function renderSheetsLog(){
-  const el = document.getElementById('sheetsLogList');
-  if(!sheetsLogItems.length){
-    el.innerHTML = `<div style="font-size:.72rem;color:var(--dim);font-family:'Space Mono',monospace;padding:8px 0;text-align:center">Belum ada data terkirim</div>`;
-    return;
-  }
-  el.innerHTML = [...sheetsLogItems].reverse().slice(0,15).map((item,i)=>`
-    <div class="slog-item" style="animation-delay:${i*.03}s">
-      <div class="slog-dot ${item.ok?'ok':'err'}"></div>
-      <div class="slog-val">${item.ok ? `🌡 ${item.temp}°C · 💧 ${item.hum}% · 🌱 ${item.soil}%` : `Gagal: ${item.err}`}</div>
-      <div class="slog-time">${item.time}</div>
-    </div>`).join('');
-}
-
-// ── KIRIM KE SHEETS — dipanggil otomatis setiap Firebase update ──
-async function logToSheets(){
-  if(prevTemp === null) return; // belum ada data
-
-  setSheetsStatus('sending','📡 Mengirim data ke Google Sheets…');
-
-  const tStr    = ts();
-  const payload = {
-    waktu      : tStr,
-    suhu       : prevTemp,
-    kelembaban : prevHum,
-    tanah      : prevSoil,
-    waterPump  : act.pump.on ? 'ON' : 'OFF',
-    fan        : act.fan1.on ? 'ON' : 'OFF',
-    peltier    : act.pelt.on ? 'ON' : 'OFF',
-    status     : document.getElementById('vSt').textContent.replace(/^[^ ]+ /,''),
-  };
-
-  sheetsLogCount++;
-
-  try {
-    const params = new URLSearchParams(payload).toString();
-    await fetch(`${SHEETS_URL}?${params}`, { method:'GET', mode:'no-cors' });
-
-    sheetsOkCount++;
-    sheetsLogItems.push({ ok:true, time:tStr, temp:prevTemp, hum:prevHum, soil:prevSoil });
-    setSheetsStatus('success', `✅ Tercatat · ${tStr} · ${prevTemp}°C / ${prevHum}% / ${prevSoil}%`);
-    addLog('on', `📊 Auto-log → Sheets: ${prevTemp}°C / ${prevHum}% / ${prevSoil}%`, tStr);
-
-  } catch(err) {
-    sheetsFailCount++;
-    sheetsLogItems.push({ ok:false, time:tStr, err: err.message });
-    setSheetsStatus('error', `🚨 Gagal kirim: ${err.message}`);
-    addLog('alert', `📊 Log Sheets gagal: ${err.message}`, tStr);
-  }
-
-  updateSheetsCounts();
-  renderSheetsLog();
-}
-
-// Update status awal setelah Firebase dapat data
-const _origUpdate = update;
-// Patch: update sheetsStatus setelah sensor pertama kali diterima
-function patchSheetsStatus(t,h,s){
-  setSheetsStatus('','✅ Firebase terhubung · Auto-log aktif · Data akan dicatat otomatis');
-  document.getElementById('autologSub').textContent = 'Aktif · Mencatat setiap perubahan data dari Firebase';
-}
-
-// Guard: pastikan SDK Firebase sudah berhasil dimuat
-if(typeof firebase === 'undefined'){
-  document.body.innerHTML = `
-    <div style="position:fixed;inset:0;background:#060f0a;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:monospace;color:#ff5252;text-align:center;padding:24px">
-      <div style="font-size:2rem">🚨</div>
-      <div style="font-size:1.1rem;font-weight:700">Firebase SDK gagal dimuat</div>
-      <div style="font-size:.85rem;color:#7de8a0;max-width:400px;line-height:1.6">
-        Pastikan kamu terhubung ke internet, lalu coba:<br>
-        1. Hard refresh (Ctrl+Shift+R / Cmd+Shift+R)<br>
-        2. Nonaktifkan ad-blocker / extension browser<br>
-        3. Coba di browser lain
-      </div>
-    </div>`;
-  throw new Error('Firebase SDK not loaded — check internet connection or ad-blocker');
-}
-
-const firebaseConfig = {
-  apiKey:       "AIzaSyDq4cyOjlMICrkoHus1ZW5nTH-KEobSEs0",
-  authDomain:   "projek-3-97a68.firebaseapp.com",
-  databaseURL:  "https://projek-3-97a68-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:    "projek-3-97a68",
-  appId:        "1:981835425647:web:d06b87fa4b9c8a6bf36a9a"
+// Firebase config
+const FB = {
+  apiKey:"AIzaSyDq4cyOjlMICrkoHus1ZW5nTH-KEobSEs0",
+  authDomain:"projek-3-97a68.firebaseapp.com",
+  databaseURL:"https://projek-3-97a68-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"projek-3-97a68",
+  appId:"1:981835425647:web:d06b87fa4b9c8a6bf36a9a"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+if(typeof firebase==='undefined'){document.body.innerHTML='<p style="color:red;padding:2rem">Firebase SDK gagal. Refresh halaman.</p>';throw new Error('SDK');}
+firebase.initializeApp(FB);
+const db=firebase.database();
 
-// ─── STATE ───────────────────────────────────────────
-const MAX=24;
-const labels=[],dT=[],dH=[],dS=[];
-const hist=[], logs=[];
-let nutriTick=0;
-// Simpan nilai sebelumnya untuk kalkulasi trend
-let prevTemp=null, prevHum=null, prevSoil=null;
-const act={
-  pump:{on:false,mode:'auto'},
-  nutr:{on:false,mode:'auto'},
-  fan1:{on:false,mode:'auto'},
-  pelt:{on:false,mode:'auto'},
-};
+// State
+const MAX=24,labels=[],dT=[],dH=[],dS=[],histori=[],logs=[];
+let prevT=null,firstData=false,pumpLocked=false,nutrLocked=false;
+let curPumpMode=-1; // -1=auto, 0=off, 1=on
+const act={pelt:false,fan:false,pump:false,nutr:false};
 
-// ─── CHARTS ──────────────────────────────────────────
-const baseOpt = {
+// Sheets stats
+let shTotal=0,shOk=0,shFail=0;
+const shLogs=[];
+
+// Charts
+const baseOpt={
   responsive:true,maintainAspectRatio:false,animation:{duration:500},
   plugins:{
-    legend:{labels:{color:'#5d9471',font:{family:"'Space Mono',monospace",size:9},boxWidth:10,padding:12}},
-    tooltip:{backgroundColor:'rgba(6,15,10,.93)',borderColor:'rgba(82,196,122,.25)',borderWidth:1,
-      titleColor:'#b0ffcc',bodyColor:'#5d9471',padding:10,
-      titleFont:{family:"'Space Mono',monospace",size:10},bodyFont:{family:"'Space Mono',monospace",size:10}}
+    legend:{labels:{color:'#5d9471',font:{family:"'Space Mono',monospace",size:9},boxWidth:9,padding:10}},
+    tooltip:{backgroundColor:'rgba(6,15,10,.94)',borderColor:'rgba(82,196,122,.22)',borderWidth:1,
+      titleColor:'#b0ffcc',bodyColor:'#5d9471',padding:9,
+      titleFont:{family:"'Space Mono',monospace",size:9},bodyFont:{family:"'Space Mono',monospace",size:9}}
   },
   scales:{
     x:{ticks:{color:'#2a4d36',font:{family:"'Space Mono',monospace",size:8},maxTicksLimit:7},grid:{color:'rgba(82,196,122,.04)'}},
-    y:{ticks:{color:'#2a4d36',font:{family:"'Space Mono',monospace",size:9}},grid:{color:'rgba(82,196,122,.04)'}}
+    y:{ticks:{color:'#2a4d36',font:{family:"'Space Mono',monospace",size:8}},grid:{color:'rgba(82,196,122,.04)'}}
   }
 };
-
-const mainDs={
+const ds={
   temp:[{label:'Suhu (°C)',data:dT,borderColor:'#ffad3b',backgroundColor:'rgba(255,173,59,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
-  hum: [{label:'Kelembaban Udara (%)',data:dH,borderColor:'#43d9f5',backgroundColor:'rgba(67,217,245,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
-  all: [
-    {label:'Suhu',data:dT,borderColor:'#ffad3b',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2},
-    {label:'Hum', data:dH,borderColor:'#43d9f5',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2},
-  ]
+  hum: [{label:'Kelembaban (%)',data:dH,borderColor:'#43d9f5',backgroundColor:'rgba(67,217,245,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
+  all: [{label:'Suhu',data:dT,borderColor:'#ffad3b',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2},
+        {label:'Hum', data:dH,borderColor:'#43d9f5',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2}]
 };
-
-const mc=new Chart(document.getElementById('mc').getContext('2d'),{type:'line',data:{labels,datasets:mainDs.temp},options:JSON.parse(JSON.stringify(baseOpt))});
-
-const soilOpt=JSON.parse(JSON.stringify(baseOpt));
-soilOpt.scales.y={...soilOpt.scales.y,min:0,max:100};
-const schart=new Chart(document.getElementById('sc').getContext('2d'),{
-  type:'line',
-  data:{labels,datasets:[
-    {label:'Kelembaban Tanah (%)',data:dS,borderColor:'#52c47a',backgroundColor:'rgba(82,196,122,.1)',tension:.4,fill:true,pointRadius:0,borderWidth:2.5},
-    {label:'Batas Bawah (40%)',data:Array(MAX).fill(40),borderColor:'rgba(255,82,82,.55)',backgroundColor:'transparent',borderDash:[6,3],pointRadius:0,borderWidth:1.5}
-  ]},
-  options:soilOpt
+const mainChart=new Chart(document.getElementById('mc').getContext('2d'),{type:'line',data:{labels,datasets:ds.temp},options:JSON.parse(JSON.stringify(baseOpt))});
+const soilOpt=JSON.parse(JSON.stringify(baseOpt));soilOpt.scales.y={...soilOpt.scales.y,min:0,max:100};
+const soilChart=new Chart(document.getElementById('sc').getContext('2d'),{
+  type:'line',data:{labels,datasets:[
+    {label:'Tanah (%)',data:dS,borderColor:'#52c47a',backgroundColor:'rgba(82,196,122,.1)',tension:.4,fill:true,pointRadius:0,borderWidth:2.5},
+    {label:'Batas (40%)',data:Array(MAX).fill(40),borderColor:'rgba(255,82,82,.5)',backgroundColor:'transparent',borderDash:[5,3],pointRadius:0,borderWidth:1.5}
+  ]},options:soilOpt
 });
+function swCh(m,btn){document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('act'));btn.classList.add('act');mainChart.data.datasets=ds[m];mainChart.update();}
 
-function swCh(m,btn){
-  document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('act'));
-  btn.classList.add('act');
-  mc.data.datasets=mainDs[m];mc.update();
+function parseStatus(raw){if(raw==null)return false;const s=String(raw).trim().toUpperCase();return s==='ON'||s==='1'||s==='TRUE';}
+
+const NAMA={pelt:'❄️ Peltier',fan:'🌀 Fan',pump:'💧 Pompa Air',nutr:'🧪 Pompa Nutrisi'};
+function setAct(id,nyala){
+  const was=act[id];act[id]=nyala;
+  const card=document.getElementById('ac-'+id);if(!card)return;
+  nyala?card.classList.add('on'):card.classList.remove('on');
+  const pill=document.getElementById('sp-'+id);if(pill)pill.textContent=nyala?'🟢 ON':'⭕ OFF';
+  const stat=document.getElementById('as-'+id);if(stat)stat.textContent=nyala?'AKTIF':'STANDBY';
+  if(was!==nyala)addLog(nyala?'on':'off',`[ESP32] ${NAMA[id]} → ${nyala?'🟢 ON':'⭕ OFF'}`,nowStr());
 }
 
-// ─── SETACT — hanya update tampilan ──────────────────
-function setAct(id, val){
-  const prev = act[id].on; act[id].on = val;
-  const card = document.getElementById('ac-'+id);
-  const pill = document.getElementById('sp-'+id);
-  document.getElementById('as-'+id).textContent = val ? 'AKTIF' : 'STANDBY';
+// ══════════════════════════════════════════
+// KONTROL POMPA AIR — -1=AUTO 0=OFF 1=ON
+// ══════════════════════════════════════════
+function setPompaAir(val){
+  if(pumpLocked)return;
+  pumpLocked=true;
+  const fb=document.getElementById('fb-pump');
+  const lbl={'-1':'AUTO','0':'MANUAL OFF','1':'MANUAL ON'};
+  showFb(fb,'wait',`📡 Set Pompa Air → ${lbl[String(val)]}…`);
+  addLog('info',`[WEB] Set PompaAir = ${val} (${lbl[String(val)]})`,nowStr());
 
-  if(val){ card.classList.add('on'); }
-  else   { card.classList.remove('on'); }
-
-  if(pill){
-    pill.textContent = val ? '🟢 ON' : '⭕ OFF';
-  }
-
-  if(prev !== val){
-    const nm = {pump:'Water Pump', nutr:'Peristaltik Pump', fan1:'Fan', pelt:'Peltier Cooler'};
-    addLog(val?'on':'off', `[ESP32] ${nm[id]} → ${val?'🟢 ON':'⭕ OFF'}`, ts());
-  }
-}
-
-// ─── KIRIM MANUAL KE /Control/PompaNutrisi ───────────
-function sendNutrisi(val){
-  // val: 1 = ON, 0 = OFF
-  db.ref('Control/PompaNutrisi').set(val)
+  db.ref('/Control/PompaAir').set(val)
     .then(()=>{
-      addLog('info', `✅ PompaNutrisi → /Control/PompaNutrisi = ${val}`, ts());
-      document.getElementById('cv-nutr').textContent = val ? 'Manual ON' : 'Manual OFF';
+      curPumpMode=val;
+      updatePumpUI(val);
+      showFb(fb,'ok',`✅ Pompa Air → ${lbl[String(val)]}`);
     })
-    .catch(err=>{
-      addLog('alert', `🚨 Gagal kirim PompaNutrisi: ${err.message}`, ts());
-    });
+    .catch(err=>showFb(fb,'err',`🚨 ${err.message}`))
+    .finally(()=>setTimeout(()=>{pumpLocked=false;},1500));
 }
 
-// ─── AUTO LOGIC — baca dari /Monitoring/ Firebase ────
-// Dipanggil dengan nilai mentah dari snapshot Firebase
-function runAuto(temp, hum, soil, monData){
-  // Water Pump — dari /Monitoring/PompaAir (0/1/true/false)
-  const pumpRaw  = monData.PompaAir;
-  const pumpOn   = pumpRaw === 1 || pumpRaw === true || pumpRaw === '1' || pumpRaw === 'ON';
-  setAct('pump', pumpOn);
-  document.getElementById('cv-pump').textContent = `${soil}%`;
-  document.getElementById('cf-pump').style.width = Math.min(100, soil) + '%';
-
-  // Fan — dari /Monitoring/Kipas (0/1/true/false)
-  const fanRaw   = monData.Kipas;
-  const fanOn    = fanRaw === 1 || fanRaw === true || fanRaw === '1' || fanRaw === 'ON';
-  setAct('fan1', fanOn);
-  document.getElementById('cv-fan1').textContent = `${temp}°C`;
-  document.getElementById('cf-fan1').style.width = Math.round(Math.min(100,((temp-15)/30)*100)) + '%';
-
-  // Peltier — dari /Monitoring/Peltier (0/1/true/false)
-  const peltRaw  = monData.Peltier;
-  const peltOn   = peltRaw === 1 || peltRaw === true || peltRaw === '1' || peltRaw === 'ON';
-  setAct('pelt', peltOn);
-  document.getElementById('cv-pelt').textContent = `${temp}°C`;
-  document.getElementById('cf-pelt').style.width = Math.round(Math.min(100,((temp-15)/30)*100)) + '%';
-
-  // Pompa Peristaltik — dari /Monitoring/PompaPeristaltik (0/1/true/false)
-  const nutrRaw  = monData.PompaPeristaltik;
-  const nutrOn   = nutrRaw === 1 || nutrRaw === true || nutrRaw === '1' || nutrRaw === 'ON';
-  setAct('nutr', nutrOn);
-  document.getElementById('cv-nutr').textContent = nutrOn ? 'Aktif' : 'Standby';
-  document.getElementById('cf-nutr').style.width = nutrOn ? '100%' : '0%';
+function updatePumpUI(val){
+  document.getElementById('pb-auto').className='pbtn auto'+(val===-1?' sel':'');
+  document.getElementById('pb-on').className  ='pbtn pon' +(val=== 1?' sel':'');
+  document.getElementById('pb-off').className ='pbtn poff'+(val=== 0?' sel':'');
+  const badge=document.getElementById('badge-pump');
+  const hint =document.getElementById('hint-pump');
+  if(val===1){
+    badge.textContent='🖥 MANUAL ON';
+    badge.style.cssText='background:rgba(67,217,245,.1);color:var(--blue);border:1px solid rgba(67,217,245,.2)';
+    hint.textContent='Paksa ON dari web';
+  }else if(val===0){
+    badge.textContent='🖥 MANUAL OFF';
+    badge.style.cssText='background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)';
+    hint.textContent='Paksa OFF dari web';
+  }else{
+    badge.textContent='⚙ AUTO';
+    badge.style.cssText='background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)';
+    hint.textContent='ON jika <40%';
+  }
 }
 
-// ─── SUMMARY ─────────────────────────────────────────
-const actNames={pump:'💧 Water Pump',nutr:'🧪 Nutri Pump',fan1:'🌀 Fan',pelt:'❄️ Peltier'};
-function renderSummary(){
-  document.getElementById('sumlist').innerHTML=
-    Object.entries(act).map(([id,a])=>`
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:.73rem;color:var(--muted)">${actNames[id]}</span>
-        <span style="font-size:.68rem;font-family:'Space Mono',monospace;padding:2px 9px;border-radius:99px;
-          background:${a.on?'rgba(82,196,122,.12)':'rgba(255,255,255,.05)'};
-          color:${a.on?'var(--g6)':'var(--dim)'}">${a.on?'ON':'OFF'}</span>
-      </div>`).join('');
-  const onN=Object.values(act).filter(a=>a.on).length;
-  document.getElementById('hsc').textContent=Math.max(60,100-onN*5);
+// ══════════════════════════════════════════
+// KONTROL POMPA NUTRISI
+// ══════════════════════════════════════════
+function setPompaNutrisi(val){
+  if(nutrLocked)return;
+  nutrLocked=true;
+  const fb=document.getElementById('fb-nutr');
+  showFb(fb,'wait',`📡 Nutrisi → ${val===1?'ON':'OFF'}…`);
+
+  db.ref('/Control/PompaNutrisi').set(val)
+    .then(()=>{
+      document.getElementById('nb-on').className ='nbtn non' +(val===1?' sel':'');
+      document.getElementById('nb-off').className='nbtn noff'+(val===0?' sel':'');
+      showFb(fb,'ok',`✅ Nutrisi ${val===1?'ON':'OFF'}`);
+      addLog('on',`[WEB→FB] PompaNutrisi = ${val} ✓`,nowStr());
+    })
+    .catch(err=>showFb(fb,'err',`🚨 ${err.message}`))
+    .finally(()=>setTimeout(()=>{nutrLocked=false;},1500));
 }
 
-// ─── LOG ─────────────────────────────────────────────
-const lico={on:'🟢',off:'⭕',warn:'⚠️',info:'📡',alert:'🚨'};
+function showFb(el,type,msg){
+  el.className=`ctrl-fb show ${type}`;el.textContent=msg;
+  if(type!=='wait')setTimeout(()=>{el.className='ctrl-fb';},4000);
+}
+
+// ══════════════════════════════════════════
+// SHEETS STATUS PANEL
+// ══════════════════════════════════════════
+function setShStatus(type,msg){
+  const el=document.getElementById('sh-status');
+  const ico={ok:'✅',err:'🚨',wait:'📡','':'⏳'};
+  el.className='sh-status '+(type||'');
+  document.getElementById('sh-ico').textContent=ico[type]||'⏳';
+  document.getElementById('sh-msg').textContent=msg;
+}
+
+function addShLog(ok,temp,hum,soil,time){
+  shTotal++;if(ok)shOk++;else shFail++;
+  document.getElementById('sh-total').textContent=shTotal;
+  document.getElementById('sh-ok').textContent=shOk;
+  document.getElementById('sh-fail').textContent=shFail;
+  shLogs.unshift({ok,temp,hum,soil,time});
+  if(shLogs.length>20)shLogs.pop();
+  document.getElementById('sh-log-list').innerHTML=shLogs.slice(0,12).map((l,i)=>`
+    <div class="sh-log-item" style="animation-delay:${i*.02}s">
+      <div class="sh-dot ${l.ok?'ok':'err'}"></div>
+      <div class="sh-val">${l.ok?`🌡 ${l.temp}°C · 💧 ${l.hum}% · 🌱 ${l.soil}%`:'Gagal kirim'}</div>
+      <div class="sh-time">${l.time}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// MAIN UPDATE
+// ══════════════════════════════════════════
+function update(data){
+  const temp=parseFloat(data.Suhu),hum=parseFloat(data.Kelembaban),soil=parseFloat(data.Tanah);
+  if(isNaN(temp)||isNaN(hum)||isNaN(soil)){addLog('warn','⚠ Data tidak valid!',nowStr());return;}
+  const tStr=nowStr();
+
+  // Charts
+  labels.push(tStr);dT.push(temp);dH.push(hum);dS.push(soil);
+  if(labels.length>MAX){labels.shift();dT.shift();dH.shift();dS.shift();}
+  soilChart.data.datasets[1].data=Array(labels.length).fill(40);
+  mainChart.update();soilChart.update();
+
+  // Sensor cards
+  document.getElementById('vT').innerHTML=`${temp.toFixed(1)}<span class="cu"> °C</span>`;
+  document.getElementById('vH').innerHTML=`${hum.toFixed(1)}<span class="cu"> %</span>`;
+  document.getElementById('vS').innerHTML=`${soil}<span class="cu"> %</span>`;
+  document.getElementById('bT').style.width=`${Math.min(100,Math.max(0,((temp-15)/30)*100))}%`;
+  document.getElementById('bH').style.width=`${Math.min(100,hum)}%`;
+  document.getElementById('bS').style.width=`${Math.min(100,soil)}%`;
+  if(prevT!==null){const d=(temp-prevT).toFixed(1);document.getElementById('trT').innerHTML=`<span style="color:${d>0?'var(--amber)':'var(--blue)'}">${d>0?'↗':'↘'} ${Math.abs(d)}°C</span> dari sebelumnya`;}
+  document.getElementById('trS').innerHTML=soil<40?`<span style="color:var(--red)">⚠ Perlu disiram!</span>`:`<span style="color:var(--g6)">✓ Cukup lembab</span>`;
+  const stat=sysStatus(temp,hum,soil);
+  document.getElementById('vSt').textContent={NORMAL:'🟢',HANGAT:'🟡',WASPADA:'🟠',KRITIS:'🔴'}[stat]+' '+stat;
+
+  // Aktuator
+  setAct('pelt',parseStatus(data.Peltier));
+  setAct('fan', parseStatus(data.Kipas));
+  setAct('pump',parseStatus(data.PompaAir));
+  setAct('nutr',parseStatus(data.PompaPeristaltik));
+
+  // Card details
+  const pct=(v,mn,mx)=>`${Math.min(100,Math.max(0,((v-mn)/(mx-mn))*100)).toFixed(0)}%`;
+  document.getElementById('cv-pelt').textContent=`${temp.toFixed(1)}°C`;document.getElementById('cf-pelt').style.width=pct(temp,15,45);
+  document.getElementById('cv-fan').textContent=`${temp.toFixed(1)}°C`;document.getElementById('cf-fan').style.width=pct(temp,15,45);
+  document.getElementById('cv-pump').textContent=`${soil}%`;document.getElementById('cf-pump').style.width=`${Math.min(100,soil)}%`;
+  document.getElementById('cv-nutr').textContent=act.nutr?'✅ Aktif':'⭕ Tidak aktif';
+  document.getElementById('cf-nutr').style.width=act.nutr?'100%':'0%';
+
+  // Sync mode pompa air dari Firebase
+  if(data.ModePompaAir!==undefined){
+    const m=String(data.ModePompaAir||'AUTO');
+    const v=m==='MANUAL-ON'?1:m==='MANUAL-OFF'?0:-1;
+    if(v!==curPumpMode){curPumpMode=v;updatePumpUI(v);}
+  }
+
+  // Sheets status (data dikirim oleh ESP32, web hanya monitoring)
+  setShStatus('ok',`✅ Data terakhir: ${temp.toFixed(1)}°C / ${hum.toFixed(1)}% / ${soil}% · ${tStr}`);
+  addShLog(true,temp.toFixed(1),hum.toFixed(1),soil,tStr);
+
+  // History
+  histori.push({time:tStr,temp:temp.toFixed(1),hum:hum.toFixed(1),soil,
+    mode:curPumpMode===-1?'AUTO':curPumpMode===1?'M-ON':'M-OFF',
+    pelt:act.pelt,fan:act.fan,pump:act.pump,nutr:act.nutr,status:stat});
+  if(histori.length>80)histori.shift();
+  renderHistori();
+
+  document.getElementById('upd').textContent=tStr;
+  prevT=temp;
+}
+
+function sysStatus(t,h,s){if(s<20)return'KRITIS';if(t>35||s<40)return'WASPADA';if(t>25)return'HANGAT';return'NORMAL';}
+function bdg(s){const m={NORMAL:'bn',HANGAT:'bw',WASPADA:'bw',KRITIS:'bd'};const l={NORMAL:'✓',HANGAT:'🌡',WASPADA:'⚠',KRITIS:'🚨'};return`<span class="bdg ${m[s]||'bn'}">${l[s]||''} ${s}</span>`;}
+function oc(v,c){return`<span style="color:${v?c:'var(--dim)'}">${v?'ON':'—'}</span>`;}
+
+function renderHistori(){
+  document.getElementById('hbody').innerHTML=[...histori].reverse().slice(0,40).map(r=>`
+    <tr>
+      <td>${r.time}</td>
+      <td style="color:var(--amber)">${r.temp}°C</td>
+      <td style="color:var(--blue)">${r.hum}%</td>
+      <td style="color:var(--g6)">${r.soil}%</td>
+      <td style="color:${r.mode==='AUTO'?'var(--lime)':r.mode==='M-ON'?'var(--blue)':'var(--red)'">${r.mode}</td>
+      <td>${oc(r.pelt,'var(--blue)')}</td>
+      <td>${oc(r.fan,'var(--blue)')}</td>
+      <td>${oc(r.pump,'var(--blue)')}</td>
+      <td><span style="color:${r.nutr?'var(--violet)':'var(--dim)'}">${r.nutr?'ON':'—'}</span></td>
+      <td>${bdg(r.status)}</td>
+    </tr>`).join('');
+}
+
+const ICO={on:'🟢',off:'⭕',warn:'⚠️',info:'📡',alert:'🚨'};
 function addLog(type,msg,time){
-  logs.unshift({type,msg,time});
-  if(logs.length>40)logs.pop();
-  document.getElementById('lbody').innerHTML=
-    logs.slice(0,18).map((l,i)=>`
-      <div class="logi" style="animation-delay:${i*.025}s">
-        <div class="liico">${lico[l.type]||'📌'}</div>
-        <div><div class="limsg">${l.msg}</div><div class="litm">${l.time}</div></div>
-      </div>`).join('');
-  document.getElementById('lcnt').textContent=`${logs.length} logs`;
+  logs.unshift({type,msg,time});if(logs.length>50)logs.pop();
+  document.getElementById('lbody').innerHTML=logs.slice(0,18).map((l,i)=>`
+    <div class="logi" style="animation-delay:${i*.02}s">
+      <div class="liico">${ICO[l.type]||'📌'}</div>
+      <div><div class="limsg">${l.msg}</div><div class="litm">${l.time}</div></div>
+    </div>`).join('');
+  document.getElementById('lcnt').textContent=`${logs.length} log`;
 }
 
-// ─── HISTORY ─────────────────────────────────────────
-function sysStatus(t,h,s){
-  if(s<20) return 'KRITIS';
-  if(t>35||s<40) return 'WASPADA';
-  if(t>25) return 'HANGAT';
-  return 'NORMAL';
-}
-function sBadge(s){
-  if(s==='NORMAL') return`<span class="badge bn">✓ NORMAL</span>`;
-  if(s==='HANGAT') return`<span class="badge bw">🌡 HANGAT</span>`;
-  if(s==='WASPADA')return`<span class="badge bw">⚠ WASPADA</span>`;
-  return`<span class="badge bd">🚨 KRITIS</span>`;
-}
-function renderHist(){
-  document.getElementById('hbody').innerHTML=
-    [...hist].reverse().slice(0,40).map(r=>`
-      <tr>
-        <td>${r.time}</td>
-        <td style="color:var(--amber)">${r.temp}°C</td>
-        <td style="color:var(--blue)">${r.hum}%</td>
-        <td style="color:var(--g6)">${r.soil}%</td>
-        <td style="color:${r.pump?'var(--blue)':'var(--dim)'}">${r.pump?'ON':'—'}</td>
-        <td style="color:${r.fan?'var(--blue)':'var(--dim)'}">${r.fan?'ON':'—'}</td>
-        <td style="color:${r.pelt?'var(--blue)':'var(--dim)'}">${r.pelt?'ON':'—'}</td>
-        <td>${sBadge(r.status)}</td>
-      </tr>`).join('');
-}
-
-// ─── EXPORT ──────────────────────────────────────────
 function expCSV(){
-  const rows=[['Waktu','Suhu','Hum Udara','Tanah','Water Pump','Fan','Peltier','Status']];
-  hist.forEach(r=>rows.push([r.time,r.temp,r.hum,r.soil,r.pump?'ON':'OFF',r.fan?'ON':'OFF',r.pelt?'ON':'OFF',r.status]));
+  const rows=[['Waktu','Suhu','Hum','Tanah','Mode Air','Peltier','Fan','PompaAir','Nutrisi','Status']];
+  histori.forEach(r=>rows.push([r.time,r.temp,r.hum,r.soil,r.mode,r.pelt?'ON':'OFF',r.fan?'ON':'OFF',r.pump?'ON':'OFF',r.nutr?'ON':'OFF',r.status]));
   const b=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
   const u=URL.createObjectURL(b);const a=document.createElement('a');
   a.href=u;a.download=`greenhouse_${Date.now()}.csv`;a.click();URL.revokeObjectURL(u);
 }
 
-// ─── TS ──────────────────────────────────────────────
-function ts(){return new Date().toLocaleTimeString('id-ID')}
+function nowStr(){return new Date().toLocaleTimeString('id-ID');}
 
-// ─── MAIN UPDATE (dipanggil oleh Firebase listener) ──
-function update(temp, hum, soil, monData){
-  const tStr = ts();
+// Init
+addLog('info','🌿 Dashboard v3.0 dimuat. Connecting Firebase…',nowStr());
+renderHistori();
+setShStatus('','Menunggu data dari ESP32…');
 
-  // ── Push data ke array grafik ──
-  labels.push(tStr); dT.push(temp); dH.push(hum); dS.push(soil);
-  if(labels.length>MAX){ labels.shift(); dT.shift(); dH.shift(); dS.shift(); }
-  schart.data.datasets[1].data = Array(labels.length).fill(40);
-  mc.update(); schart.update();
-
-  const stat = sysStatus(temp, hum, soil);
-
-  // ── Sensor cards ──
-  document.getElementById('vT').innerHTML=`${temp}<span class="cu"> °C</span>`;
-  document.getElementById('vH').innerHTML=`${hum}<span class="cu"> %</span>`;
-  document.getElementById('vS').innerHTML=`${soil}<span class="cu"> %</span>`;
-  const sE={NORMAL:'🟢',HANGAT:'🟡',WASPADA:'🟠',KRITIS:'🔴'}[stat]||'🟢';
-  document.getElementById('vSt').textContent=`${sE} ${stat}`;
-  document.getElementById('bT').style.width=`${Math.min(100,((temp-15)/30)*100)}%`;
-  document.getElementById('bH').style.width=`${hum}%`;
-  document.getElementById('bS').style.width=`${soil}%`;
-
-  // ── Trend suhu (bandingkan dengan data sebelumnya) ──
-  if(prevTemp !== null){
-    const dTv = (temp - prevTemp).toFixed(1);
-    document.getElementById('trT').innerHTML=
-      `<span style="color:${dTv>0?'var(--amber)':'var(--blue)'}">${dTv>0?'↗':'↘'} ${Math.abs(dTv)}°C</span> dari sebelumnya`;
-  } else {
-    document.getElementById('trT').innerHTML=`<span style="color:var(--g6)">— Menunggu data berikutnya</span>`;
-  }
-  document.getElementById('trS').innerHTML= soil<40
-    ? `<span style="color:var(--red)">⚠ Perlu disiram!</span>`
-    : `<span style="color:var(--g6)">✓ Tidak perlu disiram</span>`;
-
-  // ── Baca status aktuator dari /Monitoring/ Firebase ──
-  runAuto(temp, hum, soil, monData);
-
-  // ── Conditional alerts ──
-  if(soil < 40 && !act.pump.on) addLog('alert','💧 Tanah kering! Water pump aktif.',tStr);
-  if(temp > 35)                  addLog('alert','🔥 Suhu >35°C! Sistem pendingin aktif.',tStr);
-
-  // ── History ──
-  hist.push({time:tStr, temp, hum, soil:+soil,
-    pump:act.pump.on, fan:act.fan1.on, pelt:act.pelt.on, status:stat});
-  if(hist.length>80) hist.shift();
-  renderHist();
-  renderSummary();
-  document.getElementById('upd').textContent=tStr;
-
-  // simpan untuk trend berikutnya
-  prevTemp=temp; prevHum=hum; prevSoil=soil;
-
-  // ── Auto log ke Google Sheets setiap ada data baru ──
-  logToSheets();
-}
-
-// ─── SD CARD STATUS ──────────────────────────────────
-// Handle semua format: boolean, 0/1, string apapun dari ESP32
-function updateSDCard(raw){
-  const card  = document.getElementById('sdCard');
-  const vSD   = document.getElementById('vSD');
-  const bSD   = document.getElementById('bSD');
-  const trSD  = document.getElementById('trSD');
-
-  // Normalisasi nilai ke string lowercase
-  const val = String(raw).toLowerCase().trim();
-
-  // Tentukan state: aktif / error / tidak ada
-  const isOk = ['1','true','ok','aktif','active','ready','mounted','yes'].includes(val);
-  const isErr= ['0','false','error','gagal','fail','failed','not mounted','no','unmounted','missing'].includes(val);
-
-  // Reset class
-  card.classList.remove('sd-error','sd-warn');
-
-  if(isOk){
-    vSD.textContent  = '💾 AKTIF';
-    bSD.style.width  = '100%';
-    trSD.innerHTML   = `<span style="color:var(--g6)">✓ SD Card terpasang & siap</span>`;
-    addLog('info','💾 SD Card: AKTIF',ts());
-  } else if(isErr){
-    card.classList.add('sd-error');
-    vSD.textContent  = '🚨 ERROR';
-    bSD.style.width  = '100%';
-    trSD.innerHTML   = `<span style="color:var(--red)">✗ SD Card gagal / tidak terbaca</span>`;
-    addLog('alert','💾 SD Card: ERROR — periksa modul SD Card!',ts());
-  } else {
-    // Format tidak dikenal — tampilkan apa adanya
-    card.classList.add('sd-warn');
-    vSD.textContent  = `⚠ ${String(raw).toUpperCase()}`;
-    bSD.style.width  = '60%';
-    trSD.innerHTML   = `<span style="color:var(--amber)">Status: ${raw}</span>`;
-  }
-}
-
-// ─── INIT & FIREBASE LISTENER ────────────────────────
-addLog('info','🌿 Sistem monitoring aktif. ESP32 online.',ts());
-addLog('info','📡 Menghubungkan ke Firebase Realtime DB…',ts());
-renderSummary();
-renderHist();
-
-// Tampilkan status "Menunggu data..." di kartu saat pertama load
-document.getElementById('vT').innerHTML=`—<span class="cu"> °C</span>`;
-document.getElementById('vH').innerHTML=`—<span class="cu"> %</span>`;
-document.getElementById('vS').innerHTML=`—<span class="cu"> %</span>`;
-document.getElementById('vSt').textContent='⏳ Menunggu…';
-
-// Listener realtime — terpanggil setiap ada perubahan data di Firebase
-db.ref('Monitoring').on('value',
-  function(snapshot){
-    const data = snapshot.val();
-
-    // Guard: pastikan data valid sebelum diproses
-    if(!data){
-      addLog('warn','⚠ Firebase: node "Monitoring" kosong atau belum ada data.',ts());
-      return;
+db.ref('/Monitoring').on('value',
+  function(snap){
+    const data=snap.val();
+    if(!data){addLog('warn','⚠ /Monitoring kosong.',nowStr());return;}
+    if(!firstData){
+      firstData=true;
+      document.getElementById('fbTxt').textContent='Connected ✓';
+      document.getElementById('fbTxt').style.color='var(--g6)';
+      addLog('info','✅ Firebase terhubung!',nowStr());
     }
-
-    // Ambil nilai sensor (parseFloat untuk jaga-jaga kalau tersimpan sebagai string)
-    const temp = parseFloat(data.Suhu);
-    const hum  = parseFloat(data.Kelembaban);
-    const soil = parseFloat(data.Tanah);
-
-    // SD Card — baca dari /Monitoring/SDCard sesuai struktur Firebase
-    const sdRaw = data.SDCard ?? null;
-    if(sdRaw !== null && sdRaw !== undefined){
-      updateSDCard(sdRaw);
-    } else {
-      // Node SD Card belum ada di Firebase — tampilkan info
-      document.getElementById('vSD').textContent  = '— Tidak Ada';
-      document.getElementById('trSD').innerHTML   = `<span style="color:var(--dim)">Key "SDCard" belum ditemukan di /Monitoring/</span>`;
-    }
-
-    if(isNaN(temp) || isNaN(hum) || isNaN(soil)){
-      addLog('warn','⚠ Data tidak valid diterima dari Firebase.',ts());
-      return;
-    }
-
-    // Log koneksi berhasil hanya sekali (saat data pertama masuk)
-    if(prevTemp === null){
-      addLog('info','✅ Firebase terhubung. Data sensor diterima.',ts());
-      patchSheetsStatus(temp, hum, soil);
-    }
-
-    // Panggil fungsi update utama — teruskan data mentah untuk baca status aktuator
-    update(temp, hum, soil, data);
+    update(data);
   },
-  function(error){
-    // Error handler: koneksi gagal
-    addLog('alert','🚨 Gagal konek ke Firebase: ' + error.message, ts());
+  function(err){
+    addLog('alert','🚨 Firebase error: '+err.message,nowStr());
     document.getElementById('vSt').textContent='🔴 OFFLINE';
-    document.getElementById('upd').textContent='Koneksi gagal';
+    document.getElementById('fbTxt').style.color='var(--red)';
+    setShStatus('err','Firebase error — cek koneksi');
   }
 );
+
+// Sync mode pompa air saat load
+db.ref('/Control/PompaAir').once('value').then(snap=>{
+  const v=snap.val();
+  const mode=(v===null||v===undefined)?-1:parseInt(v);
+  curPumpMode=isNaN(mode)?-1:mode;
+  updatePumpUI(curPumpMode);
+  if(v===null)db.ref('/Control/PompaAir').set(-1);
+});
 </script>
 </body>
 </html>
