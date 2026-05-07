@@ -4,8 +4,24 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Mini Greenhouse · Smart Control</title>
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║         SMART GREENHOUSE DASHBOARD · v2.1 FINAL             ║
+  ║  Firebase Node Map yang dibaca:                              ║
+  ║    /Monitoring/Suhu             → float  (°C)               ║
+  ║    /Monitoring/Kelembaban       → float  (%)                 ║
+  ║    /Monitoring/Tanah            → int    (%)                 ║
+  ║    /Monitoring/SDCard           → String ("AKTIF"/"ERROR")  ║
+  ║    /Monitoring/Peltier          → String ("ON"/"OFF")       ║
+  ║    /Monitoring/Kipas            → String ("ON"/"OFF")       ║
+  ║    /Monitoring/PompaAir         → String ("ON"/"OFF")       ║
+  ║    /Monitoring/PompaPeristaltik → String ("ON"/"OFF")       ║
+  ║  Firebase Node yang ditulis:                                 ║
+  ║    /Control/PompaNutrisi        → int    (1=ON, 0=OFF)      ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-<!-- Firebase SDK (compat v10.8.1) — via jsDelivr -->
+<!-- Firebase SDK (compat v10) -->
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.8.1/firebase-app-compat.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.8.1/firebase-database-compat.min.js"></script>
 <!-- Chart.js -->
@@ -44,12 +60,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:26p
 .pdot{width:8px;height:8px;border-radius:50%;background:var(--g6);animation:pdot 2s infinite}
 @keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(82,196,122,.5)}50%{box-shadow:0 0 0 6px rgba(82,196,122,0)}}
 .upd{font-size:.72rem;color:var(--muted);font-family:'Space Mono',monospace}
-.gtoggle{display:flex;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.gbtn{padding:7px 16px;font-size:.72rem;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;letter-spacing:.4px}
-.gbtn.act{background:var(--g2);color:var(--g7)}
 
 /* SENSOR CARDS */
-.sr{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.sr{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
 .sc2{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px 16px;backdrop-filter:blur(14px);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
 .sc2:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(0,0,0,.35)}
 .sc2 .bgico{position:absolute;right:12px;top:10px;font-size:54px;opacity:.055;pointer-events:none;line-height:1}
@@ -60,12 +73,13 @@ header{display:flex;align-items:center;justify-content:space-between;padding:26p
 .sbf{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
 .strend{font-size:.72rem;color:var(--muted);margin-top:6px}
 .ct2{color:var(--amber)}.ct2 .sbf{background:linear-gradient(90deg,#f07b1d,var(--amber))}
-.csd .sval{font-size:1.05rem;line-height:1.35;color:var(--g6)} .csd .sbf{background:linear-gradient(90deg,#1a7a3e,var(--g5))}
-.csd.sd-error .sval{color:var(--red)}   .csd.sd-error .sbf{background:linear-gradient(90deg,#7a1a1a,var(--red))}
-.csd.sd-warn  .sval{color:var(--amber)} .csd.sd-warn  .sbf{background:linear-gradient(90deg,#7a4a1a,var(--amber))}
-.ch2{color:var(--blue)} .ch2 .sbf{background:linear-gradient(90deg,#1db8d6,var(--blue))}
-.cs2{color:var(--g6)}   .cs2 .sbf{background:linear-gradient(90deg,var(--g3),var(--g6))}
-.cst{color:var(--lime)}  .cst .sval{font-size:1.1rem;line-height:1.3} .cst .sbf{background:linear-gradient(90deg,var(--lime),#eeff90)}
+.csd .sval{font-size:1.05rem;line-height:1.35;color:var(--g6)}
+.csd .sbf{background:linear-gradient(90deg,#1a7a3e,var(--g5))}
+.csd.sd-error .sval{color:var(--red)}.csd.sd-error .sbf{background:linear-gradient(90deg,#7a1a1a,var(--red))}
+.csd.sd-warn  .sval{color:var(--amber)}.csd.sd-warn  .sbf{background:linear-gradient(90deg,#7a4a1a,var(--amber))}
+.ch2{color:var(--blue)}.ch2 .sbf{background:linear-gradient(90deg,#1db8d6,var(--blue))}
+.cs2{color:var(--g6)}.cs2 .sbf{background:linear-gradient(90deg,var(--g3),var(--g6))}
+.cst{color:var(--lime)}.cst .sval{font-size:1.1rem;line-height:1.3}.cst .sbf{background:linear-gradient(90deg,var(--lime),#eeff90)}
 
 /* CHARTS */
 .chrow{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
@@ -85,8 +99,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:26p
 .asec-hd h2::before{content:'';width:4px;height:20px;background:linear-gradient(var(--g5),var(--lime));border-radius:2px;display:block}
 .ainfo{font-size:.7rem;color:var(--muted);font-family:'Space Mono',monospace;background:rgba(82,196,122,.07);border:1px solid var(--border);border-radius:8px;padding:5px 12px}
 .agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-
-/* Actuator Card */
 .acard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;backdrop-filter:blur(14px);transition:all .25s}
 .acard.on{border-color:rgba(82,196,122,.4);background:rgba(15,50,28,.8);box-shadow:0 0 28px rgba(82,196,122,.1)}
 .acard.warn.on{border-color:rgba(255,173,59,.4);background:rgba(40,25,5,.8);box-shadow:0 0 28px rgba(255,173,59,.1)}
@@ -94,43 +106,44 @@ header{display:flex;align-items:center;justify-content:space-between;padding:26p
 .acard.nutr.on{border-color:rgba(181,123,255,.4);background:rgba(20,5,40,.8);box-shadow:0 0 28px rgba(181,123,255,.1)}
 .atop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
 .aico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(255,255,255,.05);transition:all .3s;margin-bottom:8px}
-.acard.on     .aico{background:rgba(82,196,122,.15);box-shadow:0 0 16px rgba(82,196,122,.25)}
+.acard.on      .aico{background:rgba(82,196,122,.15);box-shadow:0 0 16px rgba(82,196,122,.25)}
 .acard.warn.on .aico{background:rgba(255,173,59,.15);box-shadow:0 0 16px rgba(255,173,59,.25)}
 .acard.cool.on .aico{background:rgba(67,217,245,.15);box-shadow:0 0 16px rgba(67,217,245,.25)}
 .acard.nutr.on .aico{background:rgba(181,123,255,.15);box-shadow:0 0 16px rgba(181,123,255,.25)}
 .aname{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:3px}
 .asub{font-size:.68rem;color:var(--muted);letter-spacing:.5px}
-/* Status pill read-only (pengganti toggle) */
-.status-pill{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:6px 14px;border-radius:99px;font-size:.72rem;
-  font-family:'Space Mono',monospace;font-weight:700;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.05);color:var(--dim);
-  transition:all .4s;letter-spacing:.5px;
-}
-.acard.on     .status-pill{background:rgba(82,196,122,.15); border-color:rgba(82,196,122,.35); color:var(--g6)}
-.acard.warn.on .status-pill{background:rgba(255,173,59,.15); border-color:rgba(255,173,59,.35); color:var(--amber)}
-.acard.cool.on .status-pill{background:rgba(67,217,245,.15); border-color:rgba(67,217,245,.35); color:var(--blue)}
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-size:.72rem;font-family:'Space Mono',monospace;font-weight:700;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:var(--dim);transition:all .4s;letter-spacing:.5px}
+.acard.on      .status-pill{background:rgba(82,196,122,.15);border-color:rgba(82,196,122,.35);color:var(--g6)}
+.acard.warn.on .status-pill{background:rgba(255,173,59,.15);border-color:rgba(255,173,59,.35);color:var(--amber)}
+.acard.cool.on .status-pill{background:rgba(67,217,245,.15);border-color:rgba(67,217,245,.35);color:var(--blue)}
 .acard.nutr.on .status-pill{background:rgba(181,123,255,.15);border-color:rgba(181,123,255,.35);color:var(--violet)}
-/* Mode badge */
 .mbadge{display:inline-flex;align-items:center;gap:5px;font-size:.64rem;font-family:'Space Mono',monospace;padding:3px 9px;border-radius:6px;font-weight:700;margin-bottom:10px}
 .mba{background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)}
-/* Condition bar */
+.mmn{background:rgba(181,123,255,.12);color:var(--violet);border:1px solid rgba(181,123,255,.25)}
 .condbar{margin-top:10px}
 .condlbl{display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace}
 .condtrk{height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
 .condfill{height:100%;border-radius:99px;transition:width 1s ease}
-/* Status row */
 .statrow{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
 .astat{display:flex;align-items:center;gap:6px;font-size:.7rem;font-family:'Space Mono',monospace}
 .adot{width:7px;height:7px;border-radius:50%;background:var(--dim);transition:all .4s}
-.acard.on     .adot{background:var(--g5);box-shadow:0 0 6px var(--g5)}
+.acard.on      .adot{background:var(--g5);box-shadow:0 0 6px var(--g5)}
 .acard.warn.on .adot{background:var(--amber);box-shadow:0 0 6px var(--amber)}
 .acard.cool.on .adot{background:var(--blue);box-shadow:0 0 6px var(--blue)}
 .acard.nutr.on .adot{background:var(--violet);box-shadow:0 0 6px var(--violet)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .acard.on .spn{display:inline-block;animation:spin .7s linear infinite}
+
+/* Manual control buttons */
+.nutr-ctrl{display:flex;gap:8px;margin-top:12px;border-top:1px solid rgba(181,123,255,.15);padding-top:12px}
+.nutr-btn{flex:1;padding:9px 0;border-radius:9px;font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.nutr-btn-on{border:1px solid rgba(181,123,255,.45);background:rgba(181,123,255,.18);color:var(--violet)}
+.nutr-btn-on:hover{background:rgba(181,123,255,.3);transform:translateY(-1px)}
+.nutr-btn-on:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.nutr-btn-off{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:var(--muted)}
+.nutr-btn-off:hover{background:rgba(255,255,255,.1);transform:translateY(-1px)}
+.nutr-btn-off:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.nutr-fb{font-size:.6rem;color:var(--dim);font-family:'Space Mono',monospace;margin-top:5px;text-align:center}
 
 /* BOTTOM ROW */
 .botrow{display:grid;grid-template-columns:1fr 380px;gap:18px}
@@ -146,7 +159,6 @@ tbody td{padding:9px 8px;font-family:'Space Mono',monospace;font-size:.7rem}
 .bn{background:rgba(82,196,122,.12);color:var(--g6)}
 .bw{background:rgba(255,173,59,.12);color:var(--amber)}
 .bd{background:rgba(255,82,82,.12);color:var(--red)}
-/* Log */
 .logbody{padding:14px 20px 18px;max-height:300px;overflow-y:auto}
 .logbody::-webkit-scrollbar{width:3px}
 .logbody::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
@@ -156,116 +168,59 @@ tbody td{padding:9px 8px;font-family:'Space Mono',monospace;font-size:.7rem}
 .liico{font-size:1.1rem;flex-shrink:0;margin-top:2px}
 .limsg{font-size:.77rem;color:var(--txt);margin-bottom:2px}
 .litm{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
+
+/* SHEETS PANEL */
+.sheets-section{margin-bottom:18px}
+.sheets-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(14px);overflow:hidden}
+.sheets-body{padding:20px 24px 22px;display:flex;flex-direction:column;gap:16px}
+.autolog-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
+.autolog-info{display:flex;flex-direction:column;gap:3px}
+.autolog-title{font-size:.82rem;font-weight:700;color:var(--txt)}
+.autolog-sub{font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace}
+.sheets-status{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--border);font-size:.73rem;font-family:'Space Mono',monospace;color:var(--muted);transition:all .4s}
+.sheets-status.success{background:rgba(82,196,122,.1);border-color:rgba(82,196,122,.3);color:var(--g6)}
+.sheets-status.error{background:rgba(255,82,82,.1);border-color:rgba(255,82,82,.3);color:var(--red)}
+.sheets-status.sending{background:rgba(67,217,245,.08);border-color:rgba(67,217,245,.2);color:var(--blue)}
+.sstat-ico{font-size:1rem;flex-shrink:0}
+.log-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.lstat-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center}
+.lstat-num{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--lime);line-height:1}
+.lstat-lbl{font-size:.62rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.sheets-log-wrap{max-height:180px;overflow-y:auto}
+.sheets-log-wrap::-webkit-scrollbar{width:3px}
+.sheets-log-wrap::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
+.slog-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(82,196,122,.06);font-size:.72rem;animation:sli .3s ease both}
+.slog-item:last-child{border-bottom:none}
+.slog-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.slog-dot.ok{background:var(--g5)}.slog-dot.err{background:var(--red)}.slog-dot.pend{background:var(--amber)}
+.slog-val{font-family:'Space Mono',monospace;color:var(--txt);flex:1}
+.slog-time{font-size:.62rem;color:var(--dim);font-family:'Space Mono',monospace;flex-shrink:0}
+.open-sheets-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 18px;border-radius:10px;border:1px solid rgba(82,196,122,.25);background:rgba(82,196,122,.07);color:var(--g6);font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none}
+.open-sheets-btn:hover{background:rgba(82,196,122,.15);transform:translateY(-1px)}
+
+/* Summary panel */
+.sumpanel{padding:18px;display:flex;flex-direction:column;justify-content:space-between;min-height:200px}
+
 /* Footer */
 footer{border-top:1px solid var(--border);padding:18px 0;display:flex;justify-content:space-between;align-items:center;margin-top:28px;flex-wrap:wrap;gap:8px}
 footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
-/* Fade up */
+
+/* Animations */
 .fu{opacity:0;transform:translateY(18px);animation:fu .45s ease forwards}
 @keyframes fu{to{opacity:1;transform:translateY(0)}}
 .d1{animation-delay:.07s}.d2{animation-delay:.14s}.d3{animation-delay:.21s}
 .d4{animation-delay:.28s}.d5{animation-delay:.35s}.d6{animation-delay:.42s}
-/* Summary panel */
-.sumpanel{padding:18px;display:flex;flex-direction:column;justify-content:space-between;min-height:200px}
+
 /* Responsive */
 @media(max-width:1100px){.agrid{grid-template-columns:repeat(2,1fr)}.botrow{grid-template-columns:1fr}}
 @media(max-width:760px){.sr{grid-template-columns:1fr 1fr}.chrow{grid-template-columns:1fr}.agrid{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.agrid{grid-template-columns:1fr}}
-
-/* ── GOOGLE SHEETS PANEL ── */
-.sheets-section{margin-bottom:18px}
-.sheets-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(14px);overflow:hidden}
-.sheets-body{padding:20px 24px 22px;display:flex;flex-direction:column;gap:16px}
-
-/* Big log button */
-.log-btn{
-  display:flex;align-items:center;justify-content:center;gap:12px;
-  width:100%;padding:16px 24px;border-radius:14px;border:none;cursor:pointer;
-  background:linear-gradient(135deg,#1a7a3e,#25a856);
-  color:#fff;font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;
-  letter-spacing:.3px;transition:all .2s;position:relative;overflow:hidden;
-}
-.log-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);
-  opacity:0;transition:opacity .2s;
-}
-.log-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 32px rgba(37,168,86,.4)}
-.log-btn:hover:not(:disabled)::before{opacity:1}
-.log-btn:active:not(:disabled){transform:translateY(0)}
-.log-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.log-btn .btn-ico{font-size:1.3rem;flex-shrink:0}
-.log-btn .btn-spinner{
-  width:18px;height:18px;border:2px solid rgba(255,255,255,.3);
-  border-top-color:#fff;border-radius:50%;
-  animation:spin .7s linear infinite;display:none;flex-shrink:0;
-}
-.log-btn.loading .btn-spinner{display:block}
-.log-btn.loading .btn-ico{display:none}
-
-/* Auto log toggle row */
-.autolog-row{
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(255,255,255,.03);border:1px solid var(--border);
-  border-radius:12px;padding:12px 16px;
-}
-.autolog-info{display:flex;flex-direction:column;gap:3px}
-.autolog-title{font-size:.82rem;font-weight:700;color:var(--txt)}
-.autolog-sub{font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace}
-
-/* Status strip */
-.sheets-status{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 14px;border-radius:10px;
-  background:rgba(255,255,255,.03);border:1px solid var(--border);
-  font-size:.73rem;font-family:'Space Mono',monospace;color:var(--muted);
-  transition:all .4s;
-}
-.sheets-status.success{background:rgba(82,196,122,.1);border-color:rgba(82,196,122,.3);color:var(--g6)}
-.sheets-status.error  {background:rgba(255,82,82,.1); border-color:rgba(255,82,82,.3); color:var(--red)}
-.sheets-status.sending{background:rgba(67,217,245,.08);border-color:rgba(67,217,245,.2);color:var(--blue)}
-.sstat-ico{font-size:1rem;flex-shrink:0}
-
-/* Log counter badges row */
-.log-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.lstat-item{
-  background:rgba(255,255,255,.03);border:1px solid var(--border);
-  border-radius:10px;padding:10px 12px;text-align:center;
-}
-.lstat-num{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--lime);line-height:1}
-.lstat-lbl{font-size:.62rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
-
-/* Sheets log preview */
-.sheets-log-wrap{max-height:180px;overflow-y:auto}
-.sheets-log-wrap::-webkit-scrollbar{width:3px}
-.sheets-log-wrap::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
-.slog-item{
-  display:flex;align-items:center;gap:10px;padding:8px 0;
-  border-bottom:1px solid rgba(82,196,122,.06);font-size:.72rem;
-  animation:sli .3s ease both;
-}
-.slog-item:last-child{border-bottom:none}
-.slog-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.slog-dot.ok  {background:var(--g5)}
-.slog-dot.err {background:var(--red)}
-.slog-dot.pend{background:var(--amber)}
-.slog-val{font-family:'Space Mono',monospace;color:var(--txt);flex:1}
-.slog-time{font-size:.62rem;color:var(--dim);font-family:'Space Mono',monospace;flex-shrink:0}
-
-/* Sheets link button */
-.open-sheets-btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:9px 18px;border-radius:10px;border:1px solid rgba(82,196,122,.25);
-  background:rgba(82,196,122,.07);color:var(--g6);
-  font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;
-  cursor:pointer;transition:all .2s;text-decoration:none;
-}
-.open-sheets-btn:hover{background:rgba(82,196,122,.15);transform:translateY(-1px)}
+@media(max-width:480px){.sr{grid-template-columns:1fr}.agrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<!-- HEADER -->
+<!-- ═══ HEADER ═══ -->
 <header class="fu">
   <div class="brand">
     <div class="bico">🌿</div>
@@ -283,38 +238,42 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
   </div>
 </header>
 
-<!-- SENSOR CARDS -->
-<div class="sr" style="grid-template-columns:repeat(5,1fr)">
-  <div class="sc2 ct2 fu d1">
+<!-- ═══ SENSOR CARDS ═══ -->
+<div class="sr fu d1">
+  <!-- Suhu -->
+  <div class="sc2 ct2">
     <div class="bgico">🌡️</div>
     <div class="slbl">Suhu Udara</div>
     <div class="sval" id="vT">—<span class="cu"> °C</span></div>
     <div class="sbar"><div class="sbf" id="bT" style="width:0%"></div></div>
     <div class="strend" id="trT">— Menunggu data</div>
   </div>
-  <div class="sc2 ch2 fu d2">
+  <!-- Kelembaban Udara -->
+  <div class="sc2 ch2">
     <div class="bgico">💧</div>
     <div class="slbl">Kelembaban Udara</div>
     <div class="sval" id="vH">—<span class="cu"> %</span></div>
     <div class="sbar"><div class="sbf" id="bH" style="width:0%"></div></div>
-    <div class="strend" id="trH">Optimal 40–80%</div>
+    <div class="strend">Optimal 40–80%</div>
   </div>
-  <div class="sc2 cs2 fu d3">
+  <!-- Kelembaban Tanah -->
+  <div class="sc2 cs2">
     <div class="bgico">🌱</div>
     <div class="slbl">Kelembaban Tanah</div>
     <div class="sval" id="vS">—<span class="cu"> %</span></div>
     <div class="sbar"><div class="sbf" id="bS" style="width:0%"></div></div>
     <div class="strend" id="trS">— Menunggu data</div>
   </div>
-  <div class="sc2 cst fu d4">
+  <!-- Status Sistem -->
+  <div class="sc2 cst">
     <div class="bgico">📡</div>
     <div class="slbl">Status Sistem</div>
     <div class="sval" id="vSt">⏳ Menunggu…</div>
     <div class="sbar"><div class="sbf" id="bSt" style="width:100%"></div></div>
-    <div class="strend">Firebase: <span style="color:var(--g6)">Connected</span></div>
+    <div class="strend">Firebase: <span style="color:var(--g6)" id="fbConn">Menghubungkan…</span></div>
   </div>
-  <!-- SD CARD -->
-  <div class="sc2 csd fu d5" id="sdCard">
+  <!-- SD Card -->
+  <div class="sc2 csd" id="sdCard">
     <div class="bgico">💾</div>
     <div class="slbl">Status SD Card</div>
     <div class="sval" id="vSD">⏳ Menunggu…</div>
@@ -323,9 +282,8 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
   </div>
 </div>
 
-<!-- CHARTS ROW -->
+<!-- ═══ CHARTS ═══ -->
 <div class="chrow fu d3">
-  <!-- Main chart -->
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Grafik Sensor Realtime</div>
@@ -337,7 +295,6 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
     </div>
     <div class="cbox"><canvas id="mc"></canvas></div>
   </div>
-  <!-- Soil chart -->
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Grafik Kelembaban Tanah</div>
@@ -350,15 +307,15 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
   </div>
 </div>
 
-<!-- ACTUATOR PANEL -->
+<!-- ═══ ACTUATOR PANEL ═══ -->
 <div class="asec fu d4">
   <div class="asec-hd">
     <h2>Status Aktuator</h2>
-    <div class="ainfo">⚙ FULL AUTO · Semua aktuator dikendalikan otomatis oleh sistem</div>
+    <div class="ainfo">⚙ AUTO · Status disinkronisasi dari ESP32 via /Monitoring/</div>
   </div>
   <div class="agrid">
 
-    <!-- WATER PUMP -->
+    <!-- Water Pump (Auto) -->
     <div class="acard warn" id="ac-pump">
       <div class="atop">
         <div>
@@ -379,7 +336,7 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
       </div>
     </div>
 
-    <!-- PERISTALTIC PUMP -->
+    <!-- Peristaltic Pump (Manual dari Web → /Control/PompaNutrisi) -->
     <div class="acard nutr" id="ac-nutr">
       <div class="atop">
         <div>
@@ -387,39 +344,34 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
           <div class="aname">Peristaltik Pump</div>
           <div class="asub">NUTRISI TANAMAN</div>
         </div>
+        <!--
+          Status pill ini mencerminkan /Monitoring/PompaPeristaltik
+          yang dikonfirmasi oleh ESP32 — bukan hanya nilai yang dikirim Web.
+          Ini memastikan tampilan sinkron dengan kondisi fisik relay.
+        -->
         <div class="status-pill" id="sp-nutr">⭕ OFF</div>
       </div>
-      <div class="mbadge mba">⚙ AUTO · ESP32</div>
+      <div class="mbadge mmn">🖥 MANUAL</div>
       <div class="condbar">
-        <div class="condlbl"><span>Status Firebase</span><span id="cv-nutr">Menunggu…</span></div>
+        <div class="condlbl"><span>Konfirmasi ESP32</span><span id="cv-nutr">Menunggu…</span></div>
         <div class="condtrk"><div class="condfill" id="cf-nutr" style="width:0%;background:linear-gradient(90deg,#8b3bff,var(--violet))"></div></div>
       </div>
       <div class="statrow">
         <div class="astat"><div class="adot"></div><span id="as-nutr">STANDBY</span></div>
       </div>
-      <!-- Tombol Manual Control ke /Control/PompaNutrisi -->
-      <div style="display:flex;gap:8px;margin-top:12px;border-top:1px solid rgba(181,123,255,.15);padding-top:12px">
-        <button id="btn-nutr-on"
-          onclick="sendNutrisi(1)"
-          style="flex:1;padding:7px 0;border-radius:8px;border:1px solid rgba(181,123,255,.35);
-                 background:rgba(181,123,255,.15);color:var(--violet);font-family:'Syne',sans-serif;
-                 font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s">
-          ▶ ON Manual
-        </button>
-        <button id="btn-nutr-off"
-          onclick="sendNutrisi(0)"
-          style="flex:1;padding:7px 0;border-radius:8px;border:1px solid rgba(255,255,255,.1);
-                 background:rgba(255,255,255,.05);color:var(--muted);font-family:'Syne',sans-serif;
-                 font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s">
-          ■ OFF
-        </button>
+      <!-- Tombol Manual — menulis ke /Control/PompaNutrisi -->
+      <div class="nutr-ctrl">
+        <button id="btn-nutr-on"  class="nutr-btn nutr-btn-on"  onclick="sendNutrisi(1)">▶ ON Manual</button>
+        <button id="btn-nutr-off" class="nutr-btn nutr-btn-off" onclick="sendNutrisi(0)">■ OFF</button>
       </div>
-      <div style="font-size:.6rem;color:var(--dim);font-family:'Space Mono',monospace;margin-top:6px;text-align:center">
-        Kirim ke /Control/PompaNutrisi
+      <div class="nutr-fb" id="nutr-fb-status">Menulis ke /Control/PompaNutrisi</div>
+      <!-- Info: status pill di atas mengikuti konfirmasi ESP32 (/Monitoring/PompaPeristaltik) -->
+      <div style="font-size:.58rem;color:var(--dim);font-family:'Space Mono',monospace;margin-top:4px;text-align:center">
+        Status ● mengikuti konfirmasi /Monitoring/PompaPeristaltik
       </div>
     </div>
 
-    <!-- FAN -->
+    <!-- Fan (Auto) -->
     <div class="acard cool" id="ac-fan1">
       <div class="atop">
         <div>
@@ -440,9 +392,7 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
       </div>
     </div>
 
-
-
-    <!-- PELTIER -->
+    <!-- Peltier (Auto) -->
     <div class="acard cool" id="ac-pelt">
       <div class="atop">
         <div>
@@ -463,7 +413,7 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
       </div>
     </div>
 
-    <!-- SUMMARY -->
+    <!-- Summary Panel -->
     <div class="panel sumpanel">
       <div>
         <div class="pt" style="margin-bottom:14px"><i></i>Ringkasan Sistem</div>
@@ -471,7 +421,7 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
       </div>
       <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);text-align:center">
         <div style="font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace;margin-bottom:4px">Health Score</div>
-        <div style="font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--lime)" id="hsc">90</div>
+        <div style="font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--lime)" id="hsc">—</div>
         <div style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">/ 100 pts</div>
       </div>
     </div>
@@ -479,63 +429,43 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
   </div><!-- /agrid -->
 </div><!-- /asec -->
 
-<!-- GOOGLE SHEETS LOGGING PANEL -->
+<!-- ═══ GOOGLE SHEETS LOGGING PANEL ═══ -->
 <div class="sheets-section fu d5">
   <div class="sheets-panel">
     <div class="ph">
       <div class="pt"><i></i>📊 Data Logging · Google Sheets</div>
-      <a class="open-sheets-btn" href="https://script.google.com/macros/s/AKfycbx_nsewBlyonr523pOj5yj-vBRqK74WtYUtKfhFv8okY_zxflYD6FkQFXCIzGNo3Gby/exec" target="_blank">
+      <a class="open-sheets-btn" href="https://script.google.com/macros/s/AKfycbx_nsewBlyonr523pOj5yj-vBRqK74WtYUtKfhFv8okY_zxflYD6FkQFXCIzGNo3Gby/exec" target="_blank" rel="noopener">
         🔗 Buka Spreadsheet
       </a>
     </div>
     <div class="sheets-body">
-
-      <!-- Auto log status bar (selalu aktif) -->
       <div class="autolog-row">
         <div class="autolog-info">
           <div class="autolog-title">🔄 Auto Log Aktif</div>
           <div class="autolog-sub" id="autologSub">Mencatat ke Sheets setiap data Firebase berubah</div>
         </div>
-        <div class="status-pill" style="background:rgba(212,255,78,.1);border-color:rgba(212,255,78,.25);color:var(--lime)">
-          ⚙ OTOMATIS
-        </div>
+        <div class="status-pill" style="background:rgba(212,255,78,.1);border-color:rgba(212,255,78,.25);color:var(--lime)">⚙ OTOMATIS</div>
       </div>
-
-      <!-- Status strip -->
       <div class="sheets-status" id="sheetsStatus">
         <span class="sstat-ico">⏳</span>
         <span id="sheetsStatusTxt">Menunggu data sensor dari Firebase…</span>
       </div>
-
-      <!-- Stats row -->
       <div class="log-stats">
-        <div class="lstat-item">
-          <div class="lstat-num" id="logTotal">0</div>
-          <div class="lstat-lbl">Total Log</div>
-        </div>
-        <div class="lstat-item">
-          <div class="lstat-num" id="logSuccess" style="color:var(--g6)">0</div>
-          <div class="lstat-lbl">Berhasil</div>
-        </div>
-        <div class="lstat-item">
-          <div class="lstat-num" id="logFail" style="color:var(--red)">0</div>
-          <div class="lstat-lbl">Gagal</div>
-        </div>
+        <div class="lstat-item"><div class="lstat-num" id="logTotal">0</div><div class="lstat-lbl">Total Log</div></div>
+        <div class="lstat-item"><div class="lstat-num" id="logSuccess" style="color:var(--g6)">0</div><div class="lstat-lbl">Berhasil</div></div>
+        <div class="lstat-item"><div class="lstat-num" id="logFail" style="color:var(--red)">0</div><div class="lstat-lbl">Gagal</div></div>
       </div>
-
-      <!-- Log preview list -->
       <div>
         <div style="font-size:.68rem;color:var(--dim);font-family:'Space Mono',monospace;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Riwayat Pengiriman</div>
         <div class="sheets-log-wrap" id="sheetsLogList">
           <div style="font-size:.72rem;color:var(--dim);font-family:'Space Mono',monospace;padding:8px 0;text-align:center">Belum ada data terkirim</div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- BOTTOM ROW -->
+<!-- ═══ BOTTOM ROW ═══ -->
 <div class="botrow fu d5">
   <div class="panel">
     <div class="ph">
@@ -544,7 +474,7 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
     </div>
     <div class="hist-body">
       <table>
-        <thead><tr><th>Waktu</th><th>Suhu</th><th>Hum</th><th>Tanah</th><th>Pump</th><th>Fan</th><th>Peltier</th><th>Status</th></tr></thead>
+        <thead><tr><th>Waktu</th><th>Suhu</th><th>Hum</th><th>Tanah</th><th>Pump</th><th>Fan</th><th>Peltier</th><th>Nutrisi</th><th>Status</th></tr></thead>
         <tbody id="hbody"></tbody>
       </table>
     </div>
@@ -559,469 +489,514 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
 </div>
 
 <footer>
-  <div>MINI-GH v2.0 · ESP32 + DHT22 + Soil Sensor + OLED · 5 Aktuator</div>
-  <div>Arduino · Firebase Realtime DB · © 2025</div>
+  <div>MINI-GH v2.1 · ESP32 + DHT22 + Soil Sensor + OLED · 4 Aktuator</div>
+  <div>Firebase Realtime DB · © 2025</div>
 </footer>
-</div>
+</div><!-- /wrap -->
 
 <script>
-// ─── GOOGLE SHEETS LOGGING ───────────────────────────
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx_nsewBlyonr523pOj5yj-vBRqK74WtYUtKfhFv8okY_zxflYD6FkQFXCIzGNo3Gby/exec';
+// ════════════════════════════════════════════════════════════════
+// FIREBASE CONFIG
+// ════════════════════════════════════════════════════════════════
 
-let sheetsLogCount  = 0;
-let sheetsOkCount   = 0;
-let sheetsFailCount = 0;
-let sheetsLogItems  = [];
-let autoLogTimer    = null;
-
-// Set status strip
-function setSheetsStatus(type, msg){
-  const el  = document.getElementById('sheetsStatus');
-  const txt = document.getElementById('sheetsStatusTxt');
-  el.className = 'sheets-status ' + type;
-  const ico = {success:'✅', error:'🚨', sending:'📡', '':'⏳'}[type]||'⏳';
-  el.querySelector('.sstat-ico').textContent = ico;
-  txt.textContent = msg;
-}
-
-// Update counter badges
-function updateSheetsCounts(){
-  document.getElementById('logTotal').textContent   = sheetsLogCount;
-  document.getElementById('logSuccess').textContent = sheetsOkCount;
-  document.getElementById('logFail').textContent    = sheetsFailCount;
-}
-
-// Render riwayat pengiriman list
-function renderSheetsLog(){
-  const el = document.getElementById('sheetsLogList');
-  if(!sheetsLogItems.length){
-    el.innerHTML = `<div style="font-size:.72rem;color:var(--dim);font-family:'Space Mono',monospace;padding:8px 0;text-align:center">Belum ada data terkirim</div>`;
-    return;
-  }
-  el.innerHTML = [...sheetsLogItems].reverse().slice(0,15).map((item,i)=>`
-    <div class="slog-item" style="animation-delay:${i*.03}s">
-      <div class="slog-dot ${item.ok?'ok':'err'}"></div>
-      <div class="slog-val">${item.ok ? `🌡 ${item.temp}°C · 💧 ${item.hum}% · 🌱 ${item.soil}%` : `Gagal: ${item.err}`}</div>
-      <div class="slog-time">${item.time}</div>
-    </div>`).join('');
-}
-
-// ── KIRIM KE SHEETS — dipanggil otomatis setiap Firebase update ──
-async function logToSheets(){
-  if(prevTemp === null) return; // belum ada data
-
-  setSheetsStatus('sending','📡 Mengirim data ke Google Sheets…');
-
-  const tStr    = ts();
-  const payload = {
-    waktu      : tStr,
-    suhu       : prevTemp,
-    kelembaban : prevHum,
-    tanah      : prevSoil,
-    waterPump  : act.pump.on ? 'ON' : 'OFF',
-    fan        : act.fan1.on ? 'ON' : 'OFF',
-    peltier    : act.pelt.on ? 'ON' : 'OFF',
-    status     : document.getElementById('vSt').textContent.replace(/^[^ ]+ /,''),
-  };
-
-  sheetsLogCount++;
-
-  try {
-    const params = new URLSearchParams(payload).toString();
-    await fetch(`${SHEETS_URL}?${params}`, { method:'GET', mode:'no-cors' });
-
-    sheetsOkCount++;
-    sheetsLogItems.push({ ok:true, time:tStr, temp:prevTemp, hum:prevHum, soil:prevSoil });
-    setSheetsStatus('success', `✅ Tercatat · ${tStr} · ${prevTemp}°C / ${prevHum}% / ${prevSoil}%`);
-    addLog('on', `📊 Auto-log → Sheets: ${prevTemp}°C / ${prevHum}% / ${prevSoil}%`, tStr);
-
-  } catch(err) {
-    sheetsFailCount++;
-    sheetsLogItems.push({ ok:false, time:tStr, err: err.message });
-    setSheetsStatus('error', `🚨 Gagal kirim: ${err.message}`);
-    addLog('alert', `📊 Log Sheets gagal: ${err.message}`, tStr);
-  }
-
-  updateSheetsCounts();
-  renderSheetsLog();
-}
-
-// Update status awal setelah Firebase dapat data
-const _origUpdate = update;
-// Patch: update sheetsStatus setelah sensor pertama kali diterima
-function patchSheetsStatus(t,h,s){
-  setSheetsStatus('','✅ Firebase terhubung · Auto-log aktif · Data akan dicatat otomatis');
-  document.getElementById('autologSub').textContent = 'Aktif · Mencatat setiap perubahan data dari Firebase';
-}
-
-// Guard: pastikan SDK Firebase sudah berhasil dimuat
-if(typeof firebase === 'undefined'){
+// Guard: cek SDK
+if (typeof firebase === 'undefined') {
   document.body.innerHTML = `
     <div style="position:fixed;inset:0;background:#060f0a;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:monospace;color:#ff5252;text-align:center;padding:24px">
       <div style="font-size:2rem">🚨</div>
       <div style="font-size:1.1rem;font-weight:700">Firebase SDK gagal dimuat</div>
       <div style="font-size:.85rem;color:#7de8a0;max-width:400px;line-height:1.6">
-        Pastikan kamu terhubung ke internet, lalu coba:<br>
-        1. Hard refresh (Ctrl+Shift+R / Cmd+Shift+R)<br>
-        2. Nonaktifkan ad-blocker / extension browser<br>
-        3. Coba di browser lain
+        Pastikan terhubung ke internet, lalu:<br>
+        1. Hard refresh (Ctrl+Shift+R)<br>
+        2. Nonaktifkan ad-blocker<br>
+        3. Coba browser lain
       </div>
     </div>`;
-  throw new Error('Firebase SDK not loaded — check internet connection or ad-blocker');
+  throw new Error('Firebase SDK not loaded');
 }
 
 const firebaseConfig = {
-  apiKey:       "AIzaSyDq4cyOjlMICrkoHus1ZW5nTH-KEobSEs0",
-  authDomain:   "projek-3-97a68.firebaseapp.com",
-  databaseURL:  "https://projek-3-97a68-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:    "projek-3-97a68",
-  appId:        "1:981835425647:web:d06b87fa4b9c8a6bf36a9a"
+  apiKey:      "AIzaSyDq4cyOjlMICrkoHus1ZW5nTH-KEobSEs0",
+  authDomain:  "projek-3-97a68.firebaseapp.com",
+  databaseURL: "https://projek-3-97a68-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:   "projek-3-97a68",
+  appId:       "1:981835425647:web:d06b87fa4b9c8a6bf36a9a"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ─── STATE ───────────────────────────────────────────
-const MAX=24;
-const labels=[],dT=[],dH=[],dS=[];
-const hist=[], logs=[];
-let nutriTick=0;
-// Simpan nilai sebelumnya untuk kalkulasi trend
-let prevTemp=null, prevHum=null, prevSoil=null;
-const act={
-  pump:{on:false,mode:'auto'},
-  nutr:{on:false,mode:'auto'},
-  fan1:{on:false,mode:'auto'},
-  pelt:{on:false,mode:'auto'},
+// ════════════════════════════════════════════════════════════════
+// GOOGLE SHEETS URL
+// ════════════════════════════════════════════════════════════════
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx_nsewBlyonr523pOj5yj-vBRqK74WtYUtKfhFv8okY_zxflYD6FkQFXCIzGNo3Gby/exec';
+
+// ════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════
+const MAX_POINTS = 24;
+const chartLabels = [], dT = [], dH = [], dS = [];
+const hist = [], logs = [];
+
+let prevTemp = null, prevHum = null, prevSoil = null;
+let firstData = true; // Flag untuk log "terhubung" sekali saja
+
+// State aktuator — diupdate dari /Monitoring/ Firebase (konfirmasi ESP32)
+const act = {
+  pump: { on: false },
+  nutr: { on: false },
+  fan1: { on: false },
+  pelt: { on: false },
 };
 
-// ─── CHARTS ──────────────────────────────────────────
+// Sheets log counters
+let sheetsTotal = 0, sheetsOk = 0, sheetsFail = 0;
+const sheetsLogItems = [];
+
+// ════════════════════════════════════════════════════════════════
+// CHARTS SETUP
+// ════════════════════════════════════════════════════════════════
 const baseOpt = {
-  responsive:true,maintainAspectRatio:false,animation:{duration:500},
-  plugins:{
-    legend:{labels:{color:'#5d9471',font:{family:"'Space Mono',monospace",size:9},boxWidth:10,padding:12}},
-    tooltip:{backgroundColor:'rgba(6,15,10,.93)',borderColor:'rgba(82,196,122,.25)',borderWidth:1,
-      titleColor:'#b0ffcc',bodyColor:'#5d9471',padding:10,
-      titleFont:{family:"'Space Mono',monospace",size:10},bodyFont:{family:"'Space Mono',monospace",size:10}}
+  responsive: true, maintainAspectRatio: false,
+  animation: { duration: 500 },
+  plugins: {
+    legend: { labels: { color: '#5d9471', font: { family: "'Space Mono',monospace", size: 9 }, boxWidth: 10, padding: 12 } },
+    tooltip: {
+      backgroundColor: 'rgba(6,15,10,.93)', borderColor: 'rgba(82,196,122,.25)', borderWidth: 1,
+      titleColor: '#b0ffcc', bodyColor: '#5d9471', padding: 10,
+      titleFont: { family: "'Space Mono',monospace", size: 10 },
+      bodyFont:  { family: "'Space Mono',monospace", size: 10 }
+    }
   },
-  scales:{
-    x:{ticks:{color:'#2a4d36',font:{family:"'Space Mono',monospace",size:8},maxTicksLimit:7},grid:{color:'rgba(82,196,122,.04)'}},
-    y:{ticks:{color:'#2a4d36',font:{family:"'Space Mono',monospace",size:9}},grid:{color:'rgba(82,196,122,.04)'}}
+  scales: {
+    x: { ticks: { color: '#2a4d36', font: { family: "'Space Mono',monospace", size: 8 }, maxTicksLimit: 7 }, grid: { color: 'rgba(82,196,122,.04)' } },
+    y: { ticks: { color: '#2a4d36', font: { family: "'Space Mono',monospace", size: 9 } }, grid: { color: 'rgba(82,196,122,.04)' } }
   }
 };
 
-const mainDs={
-  temp:[{label:'Suhu (°C)',data:dT,borderColor:'#ffad3b',backgroundColor:'rgba(255,173,59,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
-  hum: [{label:'Kelembaban Udara (%)',data:dH,borderColor:'#43d9f5',backgroundColor:'rgba(67,217,245,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
-  all: [
-    {label:'Suhu',data:dT,borderColor:'#ffad3b',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2},
-    {label:'Hum', data:dH,borderColor:'#43d9f5',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2},
+const mainDs = {
+  temp: [{ label: 'Suhu (°C)', data: dT, borderColor: '#ffad3b', backgroundColor: 'rgba(255,173,59,.08)', tension: .4, fill: true, pointRadius: 0, borderWidth: 2 }],
+  hum:  [{ label: 'Kelembaban Udara (%)', data: dH, borderColor: '#43d9f5', backgroundColor: 'rgba(67,217,245,.08)', tension: .4, fill: true, pointRadius: 0, borderWidth: 2 }],
+  all:  [
+    { label: 'Suhu', data: dT, borderColor: '#ffad3b', backgroundColor: 'transparent', tension: .4, fill: false, pointRadius: 0, borderWidth: 2 },
+    { label: 'Hum',  data: dH, borderColor: '#43d9f5', backgroundColor: 'transparent', tension: .4, fill: false, pointRadius: 0, borderWidth: 2 },
   ]
 };
 
-const mc=new Chart(document.getElementById('mc').getContext('2d'),{type:'line',data:{labels,datasets:mainDs.temp},options:JSON.parse(JSON.stringify(baseOpt))});
-
-const soilOpt=JSON.parse(JSON.stringify(baseOpt));
-soilOpt.scales.y={...soilOpt.scales.y,min:0,max:100};
-const schart=new Chart(document.getElementById('sc').getContext('2d'),{
-  type:'line',
-  data:{labels,datasets:[
-    {label:'Kelembaban Tanah (%)',data:dS,borderColor:'#52c47a',backgroundColor:'rgba(82,196,122,.1)',tension:.4,fill:true,pointRadius:0,borderWidth:2.5},
-    {label:'Batas Bawah (40%)',data:Array(MAX).fill(40),borderColor:'rgba(255,82,82,.55)',backgroundColor:'transparent',borderDash:[6,3],pointRadius:0,borderWidth:1.5}
-  ]},
-  options:soilOpt
+const mc = new Chart(document.getElementById('mc').getContext('2d'), {
+  type: 'line', data: { labels: chartLabels, datasets: mainDs.temp },
+  options: JSON.parse(JSON.stringify(baseOpt))
 });
 
-function swCh(m,btn){
-  document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('act'));
+const soilOpt = JSON.parse(JSON.stringify(baseOpt));
+soilOpt.scales.y = { ...soilOpt.scales.y, min: 0, max: 100 };
+const schart = new Chart(document.getElementById('sc').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: chartLabels,
+    datasets: [
+      { label: 'Kelembaban Tanah (%)', data: dS, borderColor: '#52c47a', backgroundColor: 'rgba(82,196,122,.1)', tension: .4, fill: true, pointRadius: 0, borderWidth: 2.5 },
+      { label: 'Batas Bawah (40%)', data: Array(MAX_POINTS).fill(40), borderColor: 'rgba(255,82,82,.55)', backgroundColor: 'transparent', borderDash: [6, 3], pointRadius: 0, borderWidth: 1.5 }
+    ]
+  },
+  options: soilOpt
+});
+
+function swCh(m, btn) {
+  document.querySelectorAll('.ctb').forEach(b => b.classList.remove('act'));
   btn.classList.add('act');
-  mc.data.datasets=mainDs[m];mc.update();
+  mc.data.datasets = mainDs[m];
+  mc.update();
 }
 
-// ─── SETACT — hanya update tampilan ──────────────────
-function setAct(id, val){
-  const prev = act[id].on; act[id].on = val;
-  const card = document.getElementById('ac-'+id);
-  const pill = document.getElementById('sp-'+id);
-  document.getElementById('as-'+id).textContent = val ? 'AKTIF' : 'STANDBY';
+// ════════════════════════════════════════════════════════════════
+// HELPER: timestamp lokal
+// ════════════════════════════════════════════════════════════════
+function ts() { return new Date().toLocaleTimeString('id-ID'); }
 
-  if(val){ card.classList.add('on'); }
-  else   { card.classList.remove('on'); }
+// ════════════════════════════════════════════════════════════════
+// LOG AKTIVITAS
+// ════════════════════════════════════════════════════════════════
+const lico = { on: '🟢', off: '⭕', warn: '⚠️', info: '📡', alert: '🚨' };
+function addLog(type, msg, time) {
+  logs.unshift({ type, msg, time });
+  if (logs.length > 40) logs.pop();
+  document.getElementById('lbody').innerHTML = logs.slice(0, 18).map((l, i) => `
+    <div class="logi" style="animation-delay:${i * .025}s">
+      <div class="liico">${lico[l.type] || '📌'}</div>
+      <div><div class="limsg">${l.msg}</div><div class="litm">${l.time}</div></div>
+    </div>`).join('');
+  document.getElementById('lcnt').textContent = `${logs.length} logs`;
+}
 
-  if(pill){
-    pill.textContent = val ? '🟢 ON' : '⭕ OFF';
+// ════════════════════════════════════════════════════════════════
+// AKTUATOR — update tampilan berdasarkan nilai dari /Monitoring/
+// ════════════════════════════════════════════════════════════════
+/**
+ * Normalisasi nilai dari Firebase menjadi boolean.
+ * ESP32 mengirim String "ON"/"OFF" — tapi fungsi ini juga aman
+ * terhadap format lain (1/0, true/false, "1"/"0") untuk ketahanan.
+ */
+function isOn(raw) {
+  if (raw === null || raw === undefined) return false;
+  const v = String(raw).toLowerCase().trim();
+  return v === 'on' || v === '1' || v === 'true';
+}
+
+const actNames = { pump: '💧 Water Pump', nutr: '🧪 Nutri Pump', fan1: '🌀 Fan', pelt: '❄️ Peltier' };
+
+function setAct(id, rawVal) {
+  const val  = isOn(rawVal);
+  const prev = act[id].on;
+  act[id].on = val;
+
+  const card = document.getElementById('ac-' + id);
+  const pill = document.getElementById('sp-' + id);
+  const stat = document.getElementById('as-' + id);
+
+  if (val) { card.classList.add('on'); }
+  else      { card.classList.remove('on'); }
+
+  if (pill) pill.textContent = val ? '🟢 ON' : '⭕ OFF';
+  if (stat) stat.textContent = val ? 'AKTIF' : 'STANDBY';
+
+  // Log hanya saat ada perubahan status
+  if (prev !== val) {
+    addLog(val ? 'on' : 'off', `[ESP32] ${actNames[id]} → ${val ? '🟢 ON' : '⭕ OFF'}`, ts());
   }
-
-  if(prev !== val){
-    const nm = {pump:'Water Pump', nutr:'Peristaltik Pump', fan1:'Fan', pelt:'Peltier Cooler'};
-    addLog(val?'on':'off', `[ESP32] ${nm[id]} → ${val?'🟢 ON':'⭕ OFF'}`, ts());
-  }
 }
 
-// ─── KIRIM MANUAL KE /Control/PompaNutrisi ───────────
-function sendNutrisi(val){
-  // val: 1 = ON, 0 = OFF
-  db.ref('Control/PompaNutrisi').set(val)
-    .then(()=>{
-      addLog('info', `✅ PompaNutrisi → /Control/PompaNutrisi = ${val}`, ts());
-      document.getElementById('cv-nutr').textContent = val ? 'Manual ON' : 'Manual OFF';
-    })
-    .catch(err=>{
-      addLog('alert', `🚨 Gagal kirim PompaNutrisi: ${err.message}`, ts());
-    });
-}
-
-// ─── AUTO LOGIC — baca dari /Monitoring/ Firebase ────
-// Dipanggil dengan nilai mentah dari snapshot Firebase
-function runAuto(temp, hum, soil, monData){
-  // Water Pump — dari /Monitoring/PompaAir (0/1/true/false)
-  const pumpRaw  = monData.PompaAir;
-  const pumpOn   = pumpRaw === 1 || pumpRaw === true || pumpRaw === '1' || pumpRaw === 'ON';
-  setAct('pump', pumpOn);
+// Update semua aktuator dari node /Monitoring/ Firebase
+function updateActuators(monData, temp, soil) {
+  // Water Pump — /Monitoring/PompaAir
+  setAct('pump', monData.PompaAir);
   document.getElementById('cv-pump').textContent = `${soil}%`;
   document.getElementById('cf-pump').style.width = Math.min(100, soil) + '%';
 
-  // Fan — dari /Monitoring/Kipas (0/1/true/false)
-  const fanRaw   = monData.Kipas;
-  const fanOn    = fanRaw === 1 || fanRaw === true || fanRaw === '1' || fanRaw === 'ON';
-  setAct('fan1', fanOn);
+  // Fan — /Monitoring/Kipas
+  setAct('fan1', monData.Kipas);
   document.getElementById('cv-fan1').textContent = `${temp}°C`;
-  document.getElementById('cf-fan1').style.width = Math.round(Math.min(100,((temp-15)/30)*100)) + '%';
+  document.getElementById('cf-fan1').style.width = Math.round(Math.min(100, ((temp - 15) / 30) * 100)) + '%';
 
-  // Peltier — dari /Monitoring/Peltier (0/1/true/false)
-  const peltRaw  = monData.Peltier;
-  const peltOn   = peltRaw === 1 || peltRaw === true || peltRaw === '1' || peltRaw === 'ON';
-  setAct('pelt', peltOn);
+  // Peltier — /Monitoring/Peltier
+  setAct('pelt', monData.Peltier);
   document.getElementById('cv-pelt').textContent = `${temp}°C`;
-  document.getElementById('cf-pelt').style.width = Math.round(Math.min(100,((temp-15)/30)*100)) + '%';
+  document.getElementById('cf-pelt').style.width = Math.round(Math.min(100, ((temp - 15) / 30) * 100)) + '%';
 
-  // Pompa Peristaltik — dari /Monitoring/PompaPeristaltik (0/1/true/false)
-  const nutrRaw  = monData.PompaPeristaltik;
-  const nutrOn   = nutrRaw === 1 || nutrRaw === true || nutrRaw === '1' || nutrRaw === 'ON';
-  setAct('nutr', nutrOn);
-  document.getElementById('cv-nutr').textContent = nutrOn ? 'Aktif' : 'Standby';
+  // ── Pompa Peristaltik — /Monitoring/PompaPeristaltik ──────────
+  // Status ini adalah KONFIRMASI dari ESP32 (relay fisik sudah berubah).
+  // Web hanya mengirim perintah ke /Control/PompaNutrisi;
+  // status aktual ditampilkan dari node ini setelah ESP32 mengeksekusi.
+  setAct('nutr', monData.PompaPeristaltik);
+  const nutrOn = isOn(monData.PompaPeristaltik);
+  document.getElementById('cv-nutr').textContent = nutrOn ? '✓ Aktif (konfirmasi ESP32)' : 'Standby';
   document.getElementById('cf-nutr').style.width = nutrOn ? '100%' : '0%';
 }
 
-// ─── SUMMARY ─────────────────────────────────────────
-const actNames={pump:'💧 Water Pump',nutr:'🧪 Nutri Pump',fan1:'🌀 Fan',pelt:'❄️ Peltier'};
-function renderSummary(){
-  document.getElementById('sumlist').innerHTML=
-    Object.entries(act).map(([id,a])=>`
+// ════════════════════════════════════════════════════════════════
+// KONTROL MANUAL POMPA PERISTALTIK
+// Menulis ke /Control/PompaNutrisi (int: 1=ON, 0=OFF)
+// Status aktual diperbarui setelah ESP32 mengkonfirmasi via /Monitoring/PompaPeristaltik
+// ════════════════════════════════════════════════════════════════
+function sendNutrisi(val) {
+  const fbEl = document.getElementById('nutr-fb-status');
+  const btnOn  = document.getElementById('btn-nutr-on');
+  const btnOff = document.getElementById('btn-nutr-off');
+
+  // Disable tombol sementara agar tidak spam
+  btnOn.disabled  = true;
+  btnOff.disabled = true;
+  fbEl.textContent = '📡 Mengirim perintah…';
+  fbEl.style.color = 'var(--blue)';
+
+  db.ref('Control/PompaNutrisi').set(val)
+    .then(() => {
+      const label = val === 1 ? 'ON' : 'OFF';
+      fbEl.textContent = `✅ Perintah ${label} terkirim → menunggu konfirmasi ESP32…`;
+      fbEl.style.color = 'var(--g6)';
+      addLog('info', `🖥 Web → /Control/PompaNutrisi = ${val} (${label})`, ts());
+      // Re-enable setelah 3 detik (ESP32 perlu waktu ~2 detik untuk merespons)
+      setTimeout(() => { btnOn.disabled = false; btnOff.disabled = false; }, 3000);
+    })
+    .catch(err => {
+      fbEl.textContent = `🚨 Gagal: ${err.message}`;
+      fbEl.style.color = 'var(--red)';
+      addLog('alert', `🚨 Gagal kirim PompaNutrisi: ${err.message}`, ts());
+      btnOn.disabled  = false;
+      btnOff.disabled = false;
+    });
+}
+
+// ════════════════════════════════════════════════════════════════
+// SD CARD STATUS
+// Membaca /Monitoring/SDCard — String "AKTIF" atau "ERROR"
+// ════════════════════════════════════════════════════════════════
+function updateSDCard(raw) {
+  const card = document.getElementById('sdCard');
+  const vSD  = document.getElementById('vSD');
+  const bSD  = document.getElementById('bSD');
+  const trSD = document.getElementById('trSD');
+  const val  = String(raw).toUpperCase().trim();
+
+  card.classList.remove('sd-error', 'sd-warn');
+
+  if (val === 'AKTIF' || val === 'OK' || val === 'ACTIVE') {
+    vSD.textContent = '💾 AKTIF';
+    bSD.style.width = '100%';
+    trSD.innerHTML  = `<span style="color:var(--g6)">✓ SD Card terpasang & siap</span>`;
+  } else if (val === 'ERROR' || val === 'GAGAL' || val === 'FAIL') {
+    card.classList.add('sd-error');
+    vSD.textContent = '🚨 ERROR';
+    bSD.style.width = '100%';
+    trSD.innerHTML  = `<span style="color:var(--red)">✗ SD Card gagal / tidak terbaca</span>`;
+  } else {
+    card.classList.add('sd-warn');
+    vSD.textContent = `⚠ ${val}`;
+    bSD.style.width = '60%';
+    trSD.innerHTML  = `<span style="color:var(--amber)">Status tidak dikenal: ${raw}</span>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SUMMARY PANEL & HEALTH SCORE
+// ════════════════════════════════════════════════════════════════
+function renderSummary() {
+  document.getElementById('sumlist').innerHTML =
+    Object.entries(act).map(([id, a]) => `
       <div style="display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:.73rem;color:var(--muted)">${actNames[id]}</span>
         <span style="font-size:.68rem;font-family:'Space Mono',monospace;padding:2px 9px;border-radius:99px;
-          background:${a.on?'rgba(82,196,122,.12)':'rgba(255,255,255,.05)'};
-          color:${a.on?'var(--g6)':'var(--dim)'}">${a.on?'ON':'OFF'}</span>
+          background:${a.on ? 'rgba(82,196,122,.12)' : 'rgba(255,255,255,.05)'};
+          color:${a.on ? 'var(--g6)' : 'var(--dim)'}">${a.on ? 'ON' : 'OFF'}</span>
       </div>`).join('');
-  const onN=Object.values(act).filter(a=>a.on).length;
-  document.getElementById('hsc').textContent=Math.max(60,100-onN*5);
+  const onN = Object.values(act).filter(a => a.on).length;
+  document.getElementById('hsc').textContent = Math.max(60, 100 - onN * 5);
 }
 
-// ─── LOG ─────────────────────────────────────────────
-const lico={on:'🟢',off:'⭕',warn:'⚠️',info:'📡',alert:'🚨'};
-function addLog(type,msg,time){
-  logs.unshift({type,msg,time});
-  if(logs.length>40)logs.pop();
-  document.getElementById('lbody').innerHTML=
-    logs.slice(0,18).map((l,i)=>`
-      <div class="logi" style="animation-delay:${i*.025}s">
-        <div class="liico">${lico[l.type]||'📌'}</div>
-        <div><div class="limsg">${l.msg}</div><div class="litm">${l.time}</div></div>
-      </div>`).join('');
-  document.getElementById('lcnt').textContent=`${logs.length} logs`;
-}
-
-// ─── HISTORY ─────────────────────────────────────────
-function sysStatus(t,h,s){
-  if(s<20) return 'KRITIS';
-  if(t>35||s<40) return 'WASPADA';
-  if(t>25) return 'HANGAT';
+// ════════════════════════════════════════════════════════════════
+// HISTORY TABLE
+// ════════════════════════════════════════════════════════════════
+function sysStatus(t, h, s) {
+  if (s < 20)        return 'KRITIS';
+  if (t > 35 || s < 40) return 'WASPADA';
+  if (t > 25)        return 'HANGAT';
   return 'NORMAL';
 }
-function sBadge(s){
-  if(s==='NORMAL') return`<span class="badge bn">✓ NORMAL</span>`;
-  if(s==='HANGAT') return`<span class="badge bw">🌡 HANGAT</span>`;
-  if(s==='WASPADA')return`<span class="badge bw">⚠ WASPADA</span>`;
-  return`<span class="badge bd">🚨 KRITIS</span>`;
+function sBadge(s) {
+  if (s === 'NORMAL')  return `<span class="badge bn">✓ NORMAL</span>`;
+  if (s === 'HANGAT')  return `<span class="badge bw">🌡 HANGAT</span>`;
+  if (s === 'WASPADA') return `<span class="badge bw">⚠ WASPADA</span>`;
+  return `<span class="badge bd">🚨 KRITIS</span>`;
 }
-function renderHist(){
-  document.getElementById('hbody').innerHTML=
-    [...hist].reverse().slice(0,40).map(r=>`
-      <tr>
-        <td>${r.time}</td>
-        <td style="color:var(--amber)">${r.temp}°C</td>
-        <td style="color:var(--blue)">${r.hum}%</td>
-        <td style="color:var(--g6)">${r.soil}%</td>
-        <td style="color:${r.pump?'var(--blue)':'var(--dim)'}">${r.pump?'ON':'—'}</td>
-        <td style="color:${r.fan?'var(--blue)':'var(--dim)'}">${r.fan?'ON':'—'}</td>
-        <td style="color:${r.pelt?'var(--blue)':'var(--dim)'}">${r.pelt?'ON':'—'}</td>
-        <td>${sBadge(r.status)}</td>
-      </tr>`).join('');
-}
-
-// ─── EXPORT ──────────────────────────────────────────
-function expCSV(){
-  const rows=[['Waktu','Suhu','Hum Udara','Tanah','Water Pump','Fan','Peltier','Status']];
-  hist.forEach(r=>rows.push([r.time,r.temp,r.hum,r.soil,r.pump?'ON':'OFF',r.fan?'ON':'OFF',r.pelt?'ON':'OFF',r.status]));
-  const b=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
-  const u=URL.createObjectURL(b);const a=document.createElement('a');
-  a.href=u;a.download=`greenhouse_${Date.now()}.csv`;a.click();URL.revokeObjectURL(u);
+function renderHist() {
+  document.getElementById('hbody').innerHTML = [...hist].reverse().slice(0, 40).map(r => `
+    <tr>
+      <td>${r.time}</td>
+      <td style="color:var(--amber)">${r.temp}°C</td>
+      <td style="color:var(--blue)">${r.hum}%</td>
+      <td style="color:var(--g6)">${r.soil}%</td>
+      <td style="color:${r.pump ? 'var(--blue)' : 'var(--dim)'}">${r.pump ? 'ON' : '—'}</td>
+      <td style="color:${r.fan  ? 'var(--blue)' : 'var(--dim)'}">${r.fan  ? 'ON' : '—'}</td>
+      <td style="color:${r.pelt ? 'var(--blue)' : 'var(--dim)'}">${r.pelt ? 'ON' : '—'}</td>
+      <td style="color:${r.nutr ? 'var(--violet)' : 'var(--dim)'}">${r.nutr ? 'ON' : '—'}</td>
+      <td>${sBadge(r.status)}</td>
+    </tr>`).join('');
 }
 
-// ─── TS ──────────────────────────────────────────────
-function ts(){return new Date().toLocaleTimeString('id-ID')}
+// ════════════════════════════════════════════════════════════════
+// EXPORT CSV
+// ════════════════════════════════════════════════════════════════
+function expCSV() {
+  const rows = [['Waktu', 'Suhu', 'Hum Udara', 'Tanah', 'Water Pump', 'Fan', 'Peltier', 'Peristaltik', 'Status']];
+  hist.forEach(r => rows.push([r.time, r.temp, r.hum, r.soil,
+    r.pump ? 'ON' : 'OFF', r.fan ? 'ON' : 'OFF',
+    r.pelt ? 'ON' : 'OFF', r.nutr ? 'ON' : 'OFF', r.status]));
+  const b = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+  const u = URL.createObjectURL(b);
+  const a = document.createElement('a');
+  a.href = u; a.download = `greenhouse_${Date.now()}.csv`; a.click();
+  URL.revokeObjectURL(u);
+}
 
-// ─── MAIN UPDATE (dipanggil oleh Firebase listener) ──
-function update(temp, hum, soil, monData){
+// ════════════════════════════════════════════════════════════════
+// GOOGLE SHEETS LOGGING
+// ════════════════════════════════════════════════════════════════
+function setSheetsStatus(type, msg) {
+  const el  = document.getElementById('sheetsStatus');
+  const txt = document.getElementById('sheetsStatusTxt');
+  el.className = 'sheets-status ' + type;
+  const ico = { success: '✅', error: '🚨', sending: '📡', '': '⏳' }[type] || '⏳';
+  el.querySelector('.sstat-ico').textContent = ico;
+  txt.textContent = msg;
+}
+function updateSheetsCounts() {
+  document.getElementById('logTotal').textContent   = sheetsTotal;
+  document.getElementById('logSuccess').textContent = sheetsOk;
+  document.getElementById('logFail').textContent    = sheetsFail;
+}
+function renderSheetsLog() {
+  const el = document.getElementById('sheetsLogList');
+  if (!sheetsLogItems.length) {
+    el.innerHTML = `<div style="font-size:.72rem;color:var(--dim);font-family:'Space Mono',monospace;padding:8px 0;text-align:center">Belum ada data terkirim</div>`;
+    return;
+  }
+  el.innerHTML = [...sheetsLogItems].reverse().slice(0, 15).map((item, i) => `
+    <div class="slog-item" style="animation-delay:${i * .03}s">
+      <div class="slog-dot ${item.ok ? 'ok' : 'err'}"></div>
+      <div class="slog-val">${item.ok
+        ? `🌡 ${item.temp}°C · 💧 ${item.hum}% · 🌱 ${item.soil}%`
+        : `Gagal: ${item.err}`}</div>
+      <div class="slog-time">${item.time}</div>
+    </div>`).join('');
+}
+
+async function logToSheets(temp, hum, soil) {
+  if (temp === null) return;
+  const tStr = ts();
+  setSheetsStatus('sending', '📡 Mengirim data ke Google Sheets…');
+  sheetsTotal++;
+
+  const params = new URLSearchParams({
+    waktu:      tStr,
+    suhu:       temp,
+    kelembaban: hum,
+    tanah:      soil,
+    waterPump:  act.pump.on ? 'ON' : 'OFF',
+    fan:        act.fan1.on ? 'ON' : 'OFF',
+    peltier:    act.pelt.on ? 'ON' : 'OFF',
+    nutrisi:    act.nutr.on ? 'ON' : 'OFF',
+  }).toString();
+
+  try {
+    await fetch(`${SHEETS_URL}?${params}`, { method: 'GET', mode: 'no-cors' });
+    sheetsOk++;
+    sheetsLogItems.push({ ok: true, time: tStr, temp, hum, soil });
+    setSheetsStatus('success', `✅ Tercatat · ${tStr} · ${temp}°C / ${hum}% / ${soil}%`);
+    addLog('info', `📊 Auto-log → Sheets: ${temp}°C / ${hum}% / ${soil}%`, tStr);
+  } catch (err) {
+    sheetsFail++;
+    sheetsLogItems.push({ ok: false, time: tStr, err: err.message });
+    setSheetsStatus('error', `🚨 Gagal kirim: ${err.message}`);
+    addLog('alert', `📊 Log Sheets gagal: ${err.message}`, tStr);
+  }
+  updateSheetsCounts();
+  renderSheetsLog();
+}
+
+// ════════════════════════════════════════════════════════════════
+// MAIN UPDATE — dipanggil setiap Firebase /Monitoring berubah
+// ════════════════════════════════════════════════════════════════
+function update(temp, hum, soil, monData) {
   const tStr = ts();
 
-  // ── Push data ke array grafik ──
-  labels.push(tStr); dT.push(temp); dH.push(hum); dS.push(soil);
-  if(labels.length>MAX){ labels.shift(); dT.shift(); dH.shift(); dS.shift(); }
-  schart.data.datasets[1].data = Array(labels.length).fill(40);
+  // ── Chart data ──
+  chartLabels.push(tStr); dT.push(temp); dH.push(hum); dS.push(soil);
+  if (chartLabels.length > MAX_POINTS) { chartLabels.shift(); dT.shift(); dH.shift(); dS.shift(); }
+  schart.data.datasets[1].data = Array(chartLabels.length).fill(40);
   mc.update(); schart.update();
 
   const stat = sysStatus(temp, hum, soil);
 
   // ── Sensor cards ──
-  document.getElementById('vT').innerHTML=`${temp}<span class="cu"> °C</span>`;
-  document.getElementById('vH').innerHTML=`${hum}<span class="cu"> %</span>`;
-  document.getElementById('vS').innerHTML=`${soil}<span class="cu"> %</span>`;
-  const sE={NORMAL:'🟢',HANGAT:'🟡',WASPADA:'🟠',KRITIS:'🔴'}[stat]||'🟢';
-  document.getElementById('vSt').textContent=`${sE} ${stat}`;
-  document.getElementById('bT').style.width=`${Math.min(100,((temp-15)/30)*100)}%`;
-  document.getElementById('bH').style.width=`${hum}%`;
-  document.getElementById('bS').style.width=`${soil}%`;
+  document.getElementById('vT').innerHTML = `${temp}<span class="cu"> °C</span>`;
+  document.getElementById('vH').innerHTML = `${hum}<span class="cu"> %</span>`;
+  document.getElementById('vS').innerHTML = `${soil}<span class="cu"> %</span>`;
+  const sE = { NORMAL: '🟢', HANGAT: '🟡', WASPADA: '🟠', KRITIS: '🔴' }[stat] || '🟢';
+  document.getElementById('vSt').textContent = `${sE} ${stat}`;
+  document.getElementById('bT').style.width = `${Math.min(100, ((temp - 15) / 30) * 100)}%`;
+  document.getElementById('bH').style.width = `${hum}%`;
+  document.getElementById('bS').style.width = `${soil}%`;
+  document.getElementById('fbConn').textContent = 'Connected';
+  document.getElementById('fbConn').style.color  = 'var(--g6)';
 
-  // ── Trend suhu (bandingkan dengan data sebelumnya) ──
-  if(prevTemp !== null){
+  // ── Trend suhu ──
+  if (prevTemp !== null) {
     const dTv = (temp - prevTemp).toFixed(1);
-    document.getElementById('trT').innerHTML=
-      `<span style="color:${dTv>0?'var(--amber)':'var(--blue)'}">${dTv>0?'↗':'↘'} ${Math.abs(dTv)}°C</span> dari sebelumnya`;
+    document.getElementById('trT').innerHTML =
+      `<span style="color:${dTv > 0 ? 'var(--amber)' : 'var(--blue)'}">${dTv > 0 ? '↗' : '↘'} ${Math.abs(dTv)}°C</span> dari sebelumnya`;
   } else {
-    document.getElementById('trT').innerHTML=`<span style="color:var(--g6)">— Menunggu data berikutnya</span>`;
+    document.getElementById('trT').innerHTML = `<span style="color:var(--g6)">— Data pertama diterima</span>`;
   }
-  document.getElementById('trS').innerHTML= soil<40
+  document.getElementById('trS').innerHTML = soil < 40
     ? `<span style="color:var(--red)">⚠ Perlu disiram!</span>`
     : `<span style="color:var(--g6)">✓ Tidak perlu disiram</span>`;
 
-  // ── Baca status aktuator dari /Monitoring/ Firebase ──
-  runAuto(temp, hum, soil, monData);
+  // ── Aktuator — dari /Monitoring/ Firebase (konfirmasi ESP32) ──
+  updateActuators(monData, temp, soil);
 
-  // ── Conditional alerts ──
-  if(soil < 40 && !act.pump.on) addLog('alert','💧 Tanah kering! Water pump aktif.',tStr);
-  if(temp > 35)                  addLog('alert','🔥 Suhu >35°C! Sistem pendingin aktif.',tStr);
+  // ── Alert kondisi kritis ──
+  if (soil < 40 && !act.pump.on) addLog('alert', '💧 Tanah kering! Water pump aktif.', tStr);
+  if (temp > 35)                  addLog('alert', '🔥 Suhu >35°C! Sistem pendingin aktif.', tStr);
 
   // ── History ──
-  hist.push({time:tStr, temp, hum, soil:+soil,
-    pump:act.pump.on, fan:act.fan1.on, pelt:act.pelt.on, status:stat});
-  if(hist.length>80) hist.shift();
+  hist.push({
+    time: tStr, temp, hum, soil: +soil,
+    pump: act.pump.on, fan: act.fan1.on, pelt: act.pelt.on, nutr: act.nutr.on,
+    status: stat
+  });
+  if (hist.length > 80) hist.shift();
   renderHist();
   renderSummary();
-  document.getElementById('upd').textContent=tStr;
+  document.getElementById('upd').textContent = tStr;
 
-  // simpan untuk trend berikutnya
-  prevTemp=temp; prevHum=hum; prevSoil=soil;
+  // ── Simpan nilai untuk trend berikutnya ──
+  prevTemp = temp; prevHum = hum; prevSoil = soil;
 
-  // ── Auto log ke Google Sheets setiap ada data baru ──
-  logToSheets();
+  // ── Auto log ke Sheets setiap data baru dari Firebase ──
+  logToSheets(temp, hum, soil);
 }
 
-// ─── SD CARD STATUS ──────────────────────────────────
-// Handle semua format: boolean, 0/1, string apapun dari ESP32
-function updateSDCard(raw){
-  const card  = document.getElementById('sdCard');
-  const vSD   = document.getElementById('vSD');
-  const bSD   = document.getElementById('bSD');
-  const trSD  = document.getElementById('trSD');
-
-  // Normalisasi nilai ke string lowercase
-  const val = String(raw).toLowerCase().trim();
-
-  // Tentukan state: aktif / error / tidak ada
-  const isOk = ['1','true','ok','aktif','active','ready','mounted','yes'].includes(val);
-  const isErr= ['0','false','error','gagal','fail','failed','not mounted','no','unmounted','missing'].includes(val);
-
-  // Reset class
-  card.classList.remove('sd-error','sd-warn');
-
-  if(isOk){
-    vSD.textContent  = '💾 AKTIF';
-    bSD.style.width  = '100%';
-    trSD.innerHTML   = `<span style="color:var(--g6)">✓ SD Card terpasang & siap</span>`;
-    addLog('info','💾 SD Card: AKTIF',ts());
-  } else if(isErr){
-    card.classList.add('sd-error');
-    vSD.textContent  = '🚨 ERROR';
-    bSD.style.width  = '100%';
-    trSD.innerHTML   = `<span style="color:var(--red)">✗ SD Card gagal / tidak terbaca</span>`;
-    addLog('alert','💾 SD Card: ERROR — periksa modul SD Card!',ts());
-  } else {
-    // Format tidak dikenal — tampilkan apa adanya
-    card.classList.add('sd-warn');
-    vSD.textContent  = `⚠ ${String(raw).toUpperCase()}`;
-    bSD.style.width  = '60%';
-    trSD.innerHTML   = `<span style="color:var(--amber)">Status: ${raw}</span>`;
-  }
-}
-
-// ─── INIT & FIREBASE LISTENER ────────────────────────
-addLog('info','🌿 Sistem monitoring aktif. ESP32 online.',ts());
-addLog('info','📡 Menghubungkan ke Firebase Realtime DB…',ts());
+// ════════════════════════════════════════════════════════════════
+// FIREBASE REALTIME LISTENER
+// Mendengarkan perubahan di /Monitoring/ — satu listener untuk semua
+// ════════════════════════════════════════════════════════════════
+addLog('info',  '🌿 Sistem monitoring aktif.', ts());
+addLog('info',  '📡 Menghubungkan ke Firebase Realtime DB…', ts());
 renderSummary();
 renderHist();
 
-// Tampilkan status "Menunggu data..." di kartu saat pertama load
-document.getElementById('vT').innerHTML=`—<span class="cu"> °C</span>`;
-document.getElementById('vH').innerHTML=`—<span class="cu"> %</span>`;
-document.getElementById('vS').innerHTML=`—<span class="cu"> %</span>`;
-document.getElementById('vSt').textContent='⏳ Menunggu…';
-
-// Listener realtime — terpanggil setiap ada perubahan data di Firebase
 db.ref('Monitoring').on('value',
-  function(snapshot){
+  function(snapshot) {
     const data = snapshot.val();
 
-    // Guard: pastikan data valid sebelum diproses
-    if(!data){
-      addLog('warn','⚠ Firebase: node "Monitoring" kosong atau belum ada data.',ts());
+    if (!data) {
+      addLog('warn', '⚠ Firebase: node "Monitoring" kosong atau belum ada data.', ts());
       return;
     }
 
-    // Ambil nilai sensor (parseFloat untuk jaga-jaga kalau tersimpan sebagai string)
     const temp = parseFloat(data.Suhu);
     const hum  = parseFloat(data.Kelembaban);
     const soil = parseFloat(data.Tanah);
 
-    // SD Card — baca dari /Monitoring/SDCard sesuai struktur Firebase
+    // SD Card — /Monitoring/SDCard
     const sdRaw = data.SDCard ?? null;
-    if(sdRaw !== null && sdRaw !== undefined){
+    if (sdRaw !== null) {
       updateSDCard(sdRaw);
     } else {
-      // Node SD Card belum ada di Firebase — tampilkan info
-      document.getElementById('vSD').textContent  = '— Tidak Ada';
-      document.getElementById('trSD').innerHTML   = `<span style="color:var(--dim)">Key "SDCard" belum ditemukan di /Monitoring/</span>`;
+      document.getElementById('vSD').textContent = '— Tidak Ada';
+      document.getElementById('trSD').innerHTML  = `<span style="color:var(--dim)">Key "SDCard" belum ada di /Monitoring/</span>`;
     }
 
-    if(isNaN(temp) || isNaN(hum) || isNaN(soil)){
-      addLog('warn','⚠ Data tidak valid diterima dari Firebase.',ts());
+    if (isNaN(temp) || isNaN(hum) || isNaN(soil)) {
+      addLog('warn', '⚠ Data tidak valid dari Firebase. Cek format nilai di ESP32.', ts());
       return;
     }
 
-    // Log koneksi berhasil hanya sekali (saat data pertama masuk)
-    if(prevTemp === null){
-      addLog('info','✅ Firebase terhubung. Data sensor diterima.',ts());
-      patchSheetsStatus(temp, hum, soil);
+    // Log koneksi berhasil — hanya sekali
+    if (firstData) {
+      firstData = false;
+      addLog('info', '✅ Firebase terhubung. Data sensor diterima.', ts());
+      setSheetsStatus('', '✅ Firebase terhubung · Auto-log aktif');
+      document.getElementById('autologSub').textContent = 'Aktif · Mencatat setiap perubahan dari Firebase';
     }
 
-    // Panggil fungsi update utama — teruskan data mentah untuk baca status aktuator
     update(temp, hum, soil, data);
   },
-  function(error){
-    // Error handler: koneksi gagal
-    addLog('alert','🚨 Gagal konek ke Firebase: ' + error.message, ts());
-    document.getElementById('vSt').textContent='🔴 OFFLINE';
-    document.getElementById('upd').textContent='Koneksi gagal';
+  function(error) {
+    addLog('alert', '🚨 Gagal konek Firebase: ' + error.message, ts());
+    document.getElementById('vSt').textContent   = '🔴 OFFLINE';
+    document.getElementById('fbConn').textContent = 'Gagal';
+    document.getElementById('fbConn').style.color  = 'var(--red)';
+    document.getElementById('upd').textContent   = 'Koneksi gagal';
   }
 );
 </script>
