@@ -3,278 +3,275 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Mini Greenhouse · Smart Control</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-<!-- Firebase SDK v10 (compat) -->
+<title>Smart Greenhouse · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.8.1/firebase-app-compat.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.8.1/firebase-database-compat.min.js"></script>
-<!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
 <style>
 /*
- * ══════════════════════════════════════════════════════════
- * STRUKTUR FIREBASE (CANONICAL — sinkron dengan ESP32):
- *
- * /Monitoring
- *   ├── Suhu              (float)   → dari ESP32
- *   ├── Kelembaban        (float)   → dari ESP32
- *   ├── Tanah             (int)     → dari ESP32
- *   ├── SDCard            (String)  → "AKTIF" | "ERROR"
- *   ├── Peltier           (String)  → "ON" | "OFF"
- *   ├── Kipas             (String)  → "ON" | "OFF"
- *   ├── PompaAir          (String)  → "ON" | "OFF"
- *   └── PompaPeristaltik  (String)  → "ON" | "OFF"
- * /Control
- *   └── PompaNutrisi      (int)     → 1=ON, 0=OFF (web→ESP32)
- * ══════════════════════════════════════════════════════════
+ * ══════════════════════════════════════════════════════════════
+ * FIREBASE PATH (sinkron dengan ESP32):
+ * /Monitoring/Suhu              float
+ * /Monitoring/Kelembaban        float
+ * /Monitoring/Tanah             int
+ * /Monitoring/SDCard            String "SKIP"/"AKTIF"/"ERROR"
+ * /Monitoring/Peltier           String "ON"/"OFF"
+ * /Monitoring/Kipas             String "ON"/"OFF"
+ * /Monitoring/PompaAir          String "ON"/"OFF"
+ * /Monitoring/PompaPeristaltik  String "ON"/"OFF"
+ * /Control/PompaNutrisi         int 1=ON 0=OFF
+ * ══════════════════════════════════════════════════════════════
  */
-
 :root{
-  --bg0:#060f0a;--bg1:#0b1a10;--bg2:#0f2416;
-  --g1:#153320;--g2:#1d4a2e;--g3:#28693f;
-  --g4:#38955a;--g5:#52c47a;--g6:#7de8a0;--g7:#b0ffcc;
+  --bg0:#060f0a;--bg1:#0b1a10;
+  --g2:#1d4a2e;--g3:#28693f;--g5:#52c47a;--g6:#7de8a0;--g7:#b0ffcc;
   --lime:#d4ff4e;--amber:#ffad3b;--red:#ff5252;--blue:#43d9f5;--violet:#b57bff;
   --txt:#dff5e8;--muted:#5d9471;--dim:#2a4d36;
-  --card:rgba(15,36,22,.72);--border:rgba(82,196,122,.13);
-  --r:18px;
+  --card:rgba(15,36,22,.75);--border:rgba(82,196,122,.13);
+  --r:16px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'Syne',sans-serif;background:var(--bg0);color:var(--txt);min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 70% 55% at 5% 0%,rgba(40,105,63,.25) 0%,transparent 60%),
-    radial-gradient(ellipse 55% 45% at 95% 100%,rgba(82,196,122,.14) 0%,transparent 55%),
-    radial-gradient(ellipse 80% 80% at 50% 50%,var(--bg1) 0%,var(--bg0) 100%);pointer-events:none}
+  background:radial-gradient(ellipse 70% 55% at 5% 0%,rgba(40,105,63,.22) 0%,transparent 60%),
+    radial-gradient(ellipse 55% 45% at 95% 100%,rgba(82,196,122,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 80% 80% at 50% 50%,var(--bg1) 0%,var(--bg0) 100%);
+  pointer-events:none}
 body::after{content:'';position:fixed;inset:0;z-index:0;
-  background-image:linear-gradient(rgba(82,196,122,.032) 1px,transparent 1px),linear-gradient(90deg,rgba(82,196,122,.032) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(82,196,122,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(82,196,122,.03) 1px,transparent 1px);
   background-size:48px 48px;pointer-events:none}
-.wrap{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:0 22px 70px}
+.wrap{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:0 20px 60px}
 
 /* HEADER */
-header{display:flex;align-items:center;justify-content:space-between;padding:26px 0 28px;border-bottom:1px solid var(--border);margin-bottom:28px;flex-wrap:wrap;gap:12px}
-.brand{display:flex;align-items:center;gap:14px}
-.bico{width:50px;height:50px;background:linear-gradient(135deg,var(--g3),var(--g6));border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 28px rgba(82,196,122,.35);flex-shrink:0}
-.brand h1{font-size:1.3rem;font-weight:800;color:var(--g7);letter-spacing:-1px;line-height:1.1}
-.brand p{font-size:.72rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace}
-.hdr-r{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.livebadge{display:flex;align-items:center;gap:7px;background:rgba(82,196,122,.1);border:1px solid rgba(82,196,122,.25);border-radius:100px;padding:6px 16px;font-size:.75rem;font-family:'Space Mono',monospace;color:var(--g6)}
-.pdot{width:8px;height:8px;border-radius:50%;background:var(--g6);animation:pdot 2s infinite}
-@keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(82,196,122,.5)}50%{box-shadow:0 0 0 6px rgba(82,196,122,0)}}
-.upd{font-size:.72rem;color:var(--muted);font-family:'Space Mono',monospace}
+header{display:flex;align-items:center;justify-content:space-between;
+  padding:22px 0 24px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:12px}
+.bico{width:46px;height:46px;background:linear-gradient(135deg,var(--g3),var(--g6));
+  border-radius:13px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;box-shadow:0 0 24px rgba(82,196,122,.3);flex-shrink:0}
+.brand h1{font-size:1.25rem;font-weight:800;color:var(--g7);letter-spacing:-1px;line-height:1.1}
+.brand p{font-size:.68rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{display:flex;align-items:center;gap:6px;background:rgba(82,196,122,.1);
+  border:1px solid rgba(82,196,122,.22);border-radius:99px;
+  padding:5px 14px;font-size:.72rem;font-family:'Space Mono',monospace;color:var(--g6)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--g6);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(82,196,122,.5)}50%{box-shadow:0 0 0 5px rgba(82,196,122,0)}}
+#upd{font-size:.7rem;color:var(--muted);font-family:'Space Mono',monospace}
 
 /* SENSOR CARDS */
-.sr{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
-.sc2{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px 16px;backdrop-filter:blur(14px);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
-.sc2:hover{transform:translateY(-3px);box-shadow:0 14px 44px rgba(0,0,0,.35)}
-.sc2 .bgico{position:absolute;right:12px;top:10px;font-size:54px;opacity:.055;pointer-events:none;line-height:1}
-.slbl{font-size:.67rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px;font-weight:600}
-.sval{font-family:'Space Mono',monospace;font-size:2.2rem;font-weight:700;line-height:1;margin-bottom:6px}
-.cu{font-size:.85rem;color:var(--muted);font-weight:400}
-.sbar{width:100%;height:5px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-top:8px}
+.sr{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 16px 14px;backdrop-filter:blur(12px);position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s}
+.sc:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.sc .bg{position:absolute;right:10px;top:8px;font-size:48px;opacity:.05;pointer-events:none}
+.slbl{font-size:.63rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:7px;font-weight:600}
+.sval{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;line-height:1;margin-bottom:5px}
+.cu{font-size:.8rem;color:var(--muted);font-weight:400}
+.sbar{width:100%;height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-top:7px}
 .sbf{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.strend{font-size:.72rem;color:var(--muted);margin-top:6px}
-.ct2{color:var(--amber)}.ct2 .sbf{background:linear-gradient(90deg,#f07b1d,var(--amber))}
-.ch2{color:var(--blue)}.ch2 .sbf{background:linear-gradient(90deg,#1db8d6,var(--blue))}
-.cs2{color:var(--g6)}.cs2 .sbf{background:linear-gradient(90deg,var(--g3),var(--g6))}
-.cst{color:var(--lime)}.cst .sval{font-size:1.1rem;line-height:1.3}.cst .sbf{background:linear-gradient(90deg,var(--lime),#eeff90)}
-.csd .sval{font-size:1.05rem;line-height:1.35;color:var(--g6)}.csd .sbf{background:linear-gradient(90deg,#1a7a3e,var(--g5))}
-.csd.sd-error .sval{color:var(--red)}.csd.sd-error .sbf{background:linear-gradient(90deg,#7a1a1a,var(--red))}
-.csd.sd-warn .sval{color:var(--amber)}.csd.sd-warn .sbf{background:linear-gradient(90deg,#7a4a1a,var(--amber))}
+.str{font-size:.68rem;color:var(--muted);margin-top:5px}
+.ct{color:var(--amber)}.ct .sbf{background:linear-gradient(90deg,#f07b1d,var(--amber))}
+.ch{color:var(--blue)}.ch .sbf{background:linear-gradient(90deg,#1db8d6,var(--blue))}
+.cs{color:var(--g6)}.cs .sbf{background:linear-gradient(90deg,var(--g3),var(--g6))}
+.cx{color:var(--lime)}.cx .sval{font-size:1rem;line-height:1.3}.cx .sbf{background:linear-gradient(90deg,var(--lime),#eeff90)}
+.csd .sval{font-size:.95rem;line-height:1.4;color:var(--g6)}.csd .sbf{background:linear-gradient(90deg,#1a7a3e,var(--g5))}
+.csd.err .sval{color:var(--amber)}.csd.err .sbf{background:linear-gradient(90deg,#7a4a1a,var(--amber))}
 
 /* CHARTS */
-.chrow{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(14px);overflow:hidden}
-.ph{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 13px;border-bottom:1px solid var(--border)}
-.pt{font-size:.82rem;font-weight:700;color:var(--g7);display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace}
-.pt i{width:7px;height:7px;border-radius:50%;background:var(--g5);display:inline-block}
-.chtabs{display:flex;gap:4px}
-.ctb{padding:5px 12px;border-radius:8px;font-size:.68rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;font-family:'Syne',sans-serif}
+.chrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(12px);overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 11px;border-bottom:1px solid var(--border)}
+.pt{font-size:.78rem;font-weight:700;color:var(--g7);display:flex;align-items:center;gap:7px;font-family:'Space Mono',monospace}
+.pt i{width:6px;height:6px;border-radius:50%;background:var(--g5);display:inline-block}
+.ctabs{display:flex;gap:3px}
+.ctb{padding:4px 11px;border-radius:7px;font-size:.65rem;font-weight:700;cursor:pointer;
+  border:none;background:transparent;color:var(--muted);transition:all .2s;font-family:'Syne',sans-serif}
 .ctb.act{background:var(--g2);color:var(--g7)}
-.cbox{padding:16px 18px;height:230px;position:relative}
+.cbox{padding:14px 16px;height:220px;position:relative}
 
-/* ACTUATOR SECTION */
-.asec{margin-bottom:18px}
-.asec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.asec-hd h2{font-size:1rem;font-weight:800;color:var(--g7);display:flex;align-items:center;gap:10px}
-.asec-hd h2::before{content:'';width:4px;height:20px;background:linear-gradient(var(--g5),var(--lime));border-radius:2px;display:block}
-.ainfo{font-size:.7rem;color:var(--muted);font-family:'Space Mono',monospace;background:rgba(82,196,122,.07);border:1px solid var(--border);border-radius:8px;padding:5px 12px}
-.agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-
-/* Actuator Card */
-.acard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;backdrop-filter:blur(14px);transition:all .25s}
-.acard.on{border-color:rgba(82,196,122,.4);background:rgba(15,50,28,.8);box-shadow:0 0 28px rgba(82,196,122,.1)}
-.acard.warn.on{border-color:rgba(255,173,59,.4);background:rgba(40,25,5,.8);box-shadow:0 0 28px rgba(255,173,59,.1)}
-.acard.cool.on{border-color:rgba(67,217,245,.4);background:rgba(5,25,40,.8);box-shadow:0 0 28px rgba(67,217,245,.12)}
-.acard.nutr.on{border-color:rgba(181,123,255,.4);background:rgba(20,5,40,.8);box-shadow:0 0 28px rgba(181,123,255,.1)}
-.atop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
-.aico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(255,255,255,.05);transition:all .3s;margin-bottom:8px}
-.acard.on .aico{background:rgba(82,196,122,.15);box-shadow:0 0 16px rgba(82,196,122,.25)}
-.acard.warn.on .aico{background:rgba(255,173,59,.15);box-shadow:0 0 16px rgba(255,173,59,.25)}
-.acard.cool.on .aico{background:rgba(67,217,245,.15);box-shadow:0 0 16px rgba(67,217,245,.25)}
-.acard.nutr.on .aico{background:rgba(181,123,255,.15);box-shadow:0 0 16px rgba(181,123,255,.25)}
-.aname{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:3px}
-.asub{font-size:.68rem;color:var(--muted);letter-spacing:.5px}
-.status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-size:.72rem;font-family:'Space Mono',monospace;font-weight:700;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:var(--dim);transition:all .4s;letter-spacing:.5px}
-.acard.on .status-pill{background:rgba(82,196,122,.15);border-color:rgba(82,196,122,.35);color:var(--g6)}
-.acard.warn.on .status-pill{background:rgba(255,173,59,.15);border-color:rgba(255,173,59,.35);color:var(--amber)}
-.acard.cool.on .status-pill{background:rgba(67,217,245,.15);border-color:rgba(67,217,245,.35);color:var(--blue)}
-.acard.nutr.on .status-pill{background:rgba(181,123,255,.15);border-color:rgba(181,123,255,.35);color:var(--violet)}
-.mbadge{display:inline-flex;align-items:center;gap:5px;font-size:.64rem;font-family:'Space Mono',monospace;padding:3px 9px;border-radius:6px;font-weight:700;margin-bottom:10px}
-.mba{background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)}
-.mmn{background:rgba(181,123,255,.1);color:var(--violet);border:1px solid rgba(181,123,255,.2)}
-.condbar{margin-top:10px}
-.condlbl{display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace}
-.condtrk{height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
-.condfill{height:100%;border-radius:99px;transition:width 1s ease}
-.statrow{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
-.astat{display:flex;align-items:center;gap:6px;font-size:.7rem;font-family:'Space Mono',monospace}
-.adot{width:7px;height:7px;border-radius:50%;background:var(--dim);transition:all .4s}
-.acard.on .adot{background:var(--g5);box-shadow:0 0 6px var(--g5)}
-.acard.warn.on .adot{background:var(--amber);box-shadow:0 0 6px var(--amber)}
-.acard.cool.on .adot{background:var(--blue);box-shadow:0 0 6px var(--blue)}
-.acard.nutr.on .adot{background:var(--violet);box-shadow:0 0 6px var(--violet)}
+/* ACTUATOR */
+.asec{margin-bottom:16px}
+.asec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.asec-hd h2{font-size:.95rem;font-weight:800;color:var(--g7);display:flex;align-items:center;gap:9px}
+.asec-hd h2::before{content:'';width:4px;height:18px;background:linear-gradient(var(--g5),var(--lime));border-radius:2px;display:block}
+.ainfo{font-size:.67rem;color:var(--muted);font-family:'Space Mono',monospace;
+  background:rgba(82,196,122,.07);border:1px solid var(--border);border-radius:8px;padding:4px 11px}
+.agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.acard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 16px;backdrop-filter:blur(12px);transition:all .25s}
+.acard.on{border-color:rgba(82,196,122,.4);background:rgba(15,50,28,.82);box-shadow:0 0 24px rgba(82,196,122,.1)}
+.acard.warn.on{border-color:rgba(255,173,59,.4);background:rgba(40,25,5,.82);box-shadow:0 0 24px rgba(255,173,59,.1)}
+.acard.cool.on{border-color:rgba(67,217,245,.4);background:rgba(5,25,40,.82);box-shadow:0 0 24px rgba(67,217,245,.1)}
+.acard.nutr.on{border-color:rgba(181,123,255,.4);background:rgba(20,5,40,.82);box-shadow:0 0 24px rgba(181,123,255,.1)}
+.atop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.aico{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;background:rgba(255,255,255,.05);transition:all .3s;margin-bottom:7px}
+.acard.on     .aico{background:rgba(82,196,122,.15);box-shadow:0 0 14px rgba(82,196,122,.25)}
+.acard.warn.on .aico{background:rgba(255,173,59,.15);box-shadow:0 0 14px rgba(255,173,59,.25)}
+.acard.cool.on .aico{background:rgba(67,217,245,.15);box-shadow:0 0 14px rgba(67,217,245,.25)}
+.acard.nutr.on .aico{background:rgba(181,123,255,.15);box-shadow:0 0 14px rgba(181,123,255,.25)}
+.aname{font-size:.88rem;font-weight:700;color:var(--txt);margin-bottom:2px}
+.asub{font-size:.64rem;color:var(--muted);letter-spacing:.5px}
+.spill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;
+  font-size:.68rem;font-family:'Space Mono',monospace;font-weight:700;
+  border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);
+  color:var(--dim);transition:all .4s}
+.acard.on     .spill{background:rgba(82,196,122,.15);border-color:rgba(82,196,122,.35);color:var(--g6)}
+.acard.warn.on .spill{background:rgba(255,173,59,.15);border-color:rgba(255,173,59,.35);color:var(--amber)}
+.acard.cool.on .spill{background:rgba(67,217,245,.15);border-color:rgba(67,217,245,.35);color:var(--blue)}
+.acard.nutr.on .spill{background:rgba(181,123,255,.15);border-color:rgba(181,123,255,.35);color:var(--violet)}
+.mbadge{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-family:'Space Mono',monospace;
+  padding:2px 8px;border-radius:5px;font-weight:700;margin-bottom:8px}
+.mba{background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.18)}
+.mmn{background:rgba(181,123,255,.1);color:var(--violet);border:1px solid rgba(181,123,255,.18)}
+.cbar{margin-top:9px}
+.clbl{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-bottom:3px;font-family:'Space Mono',monospace}
+.ctrk{height:3px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+.cfill{height:100%;border-radius:99px;transition:width 1s ease}
+.srow{display:flex;align-items:center;justify-content:space-between;margin-top:9px}
+.astat{display:flex;align-items:center;gap:5px;font-size:.67rem;font-family:'Space Mono',monospace}
+.adot{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:all .4s}
+.acard.on     .adot{background:var(--g5);box-shadow:0 0 5px var(--g5)}
+.acard.warn.on .adot{background:var(--amber);box-shadow:0 0 5px var(--amber)}
+.acard.cool.on .adot{background:var(--blue);box-shadow:0 0 5px var(--blue)}
+.acard.nutr.on .adot{background:var(--violet);box-shadow:0 0 5px var(--violet)}
 @keyframes spin{to{transform:rotate(360deg)}}
-.acard.on .spn{display:inline-block;animation:spin .7s linear infinite}
+.acard.on .spn{display:inline-block;animation:spin .8s linear infinite}
+.hint{font-size:.58rem;color:var(--muted);font-family:'Space Mono',monospace}
 
-/* Manual Control Buttons */
-.ctrl-btns{display:flex;gap:8px;margin-top:12px;border-top:1px solid rgba(181,123,255,.15);padding-top:12px}
-.btn-on,.btn-off{flex:1;padding:8px 0;border-radius:9px;font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;border:none}
-.btn-on{background:rgba(181,123,255,.2);border:1px solid rgba(181,123,255,.4);color:var(--violet)}
-.btn-on:hover{background:rgba(181,123,255,.35);transform:translateY(-1px)}
-.btn-on:active{transform:translateY(0)}
-.btn-on:disabled,.btn-off:disabled{opacity:.45;cursor:not-allowed;transform:none}
+/* TOMBOL MANUAL PERISTALTIK */
+.ctrl-wrap{margin-top:10px;border-top:1px solid rgba(181,123,255,.15);padding-top:10px}
+.ctrl-btns{display:flex;gap:7px;margin-bottom:7px}
+.btn-on,.btn-off{flex:1;padding:7px 0;border-radius:8px;font-family:'Syne',sans-serif;
+  font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-on{background:rgba(181,123,255,.18);border:1px solid rgba(181,123,255,.4);color:var(--violet)}
+.btn-on:hover:not(:disabled){background:rgba(181,123,255,.32);transform:translateY(-1px)}
+.btn-on:disabled,.btn-off:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-on.aktif{background:rgba(181,123,255,.4);border-color:var(--violet);color:#fff;box-shadow:0 0 10px rgba(181,123,255,.3)}
 .btn-off{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--muted)}
-.btn-off:hover{background:rgba(255,255,255,.1);transform:translateY(-1px)}
-.btn-off:active{transform:translateY(0)}
-/* Active highlight untuk button yang sedang aktif */
-.btn-on.active-state{background:rgba(181,123,255,.4);border-color:var(--violet);color:#fff;box-shadow:0 0 12px rgba(181,123,255,.4)}
-.btn-off.active-state{background:rgba(255,82,82,.15);border-color:rgba(255,82,82,.35);color:var(--red)}
-.ctrl-hint{font-size:.6rem;color:var(--dim);font-family:'Space Mono',monospace;margin-top:6px;text-align:center}
-/* Feedback toast untuk tombol manual */
-.ctrl-feedback{
-  font-size:.68rem;font-family:'Space Mono',monospace;
-  padding:5px 10px;border-radius:7px;margin-top:8px;text-align:center;
-  transition:all .3s;opacity:0;
-}
-.ctrl-feedback.show{opacity:1}
-.ctrl-feedback.ok{background:rgba(82,196,122,.1);color:var(--g6);border:1px solid rgba(82,196,122,.2)}
-.ctrl-feedback.err{background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)}
-.ctrl-feedback.wait{background:rgba(67,217,245,.08);color:var(--blue);border:1px solid rgba(67,217,245,.2)}
+.btn-off:hover:not(:disabled){background:rgba(255,255,255,.1);transform:translateY(-1px)}
+.btn-off.aktif{background:rgba(255,82,82,.12);border-color:rgba(255,82,82,.3);color:var(--red)}
+.ctrl-hint{font-size:.58rem;color:var(--dim);font-family:'Space Mono',monospace;text-align:center;margin-bottom:5px}
+.ctrl-fb{font-size:.65rem;font-family:'Space Mono',monospace;padding:4px 8px;border-radius:6px;
+  text-align:center;opacity:0;transition:opacity .3s}
+.ctrl-fb.show{opacity:1}
+.ctrl-fb.ok  {background:rgba(82,196,122,.1);color:var(--g6);border:1px solid rgba(82,196,122,.2)}
+.ctrl-fb.err {background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)}
+.ctrl-fb.wait{background:rgba(67,217,245,.08);color:var(--blue);border:1px solid rgba(67,217,245,.18)}
 
 /* BOTTOM ROW */
-.botrow{display:grid;grid-template-columns:1fr 380px;gap:18px}
-.hist-body{padding:0 20px 18px;max-height:300px;overflow-y:auto}
-.hist-body::-webkit-scrollbar{width:3px}
-.hist-body::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
+.botrow{display:grid;grid-template-columns:1fr 360px;gap:16px}
+.hbody{padding:0 18px 16px;max-height:280px;overflow-y:auto}
+.hbody::-webkit-scrollbar{width:3px}
+.hbody::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
 table{width:100%;border-collapse:collapse}
-thead th{padding:9px 8px;text-align:left;font-size:.62rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);font-weight:700;position:sticky;top:0;background:var(--bg1);z-index:1}
-tbody tr{border-top:1px solid rgba(82,196,122,.06);transition:background .15s}
+thead th{padding:8px 7px;text-align:left;font-size:.59rem;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--dim);font-weight:700;position:sticky;top:0;background:var(--bg1);z-index:1}
+tbody tr{border-top:1px solid rgba(82,196,122,.05);transition:background .15s}
 tbody tr:hover{background:rgba(82,196,122,.05)}
-tbody td{padding:9px 8px;font-family:'Space Mono',monospace;font-size:.7rem}
-.badge{padding:2px 9px;border-radius:99px;font-size:.62rem;font-weight:700;display:inline-block}
+tbody td{padding:8px 7px;font-family:'Space Mono',monospace;font-size:.67rem}
+.bdg{padding:2px 8px;border-radius:99px;font-size:.59rem;font-weight:700;display:inline-block}
 .bn{background:rgba(82,196,122,.12);color:var(--g6)}
 .bw{background:rgba(255,173,59,.12);color:var(--amber)}
 .bd{background:rgba(255,82,82,.12);color:var(--red)}
-/* Log */
-.logbody{padding:14px 20px 18px;max-height:300px;overflow-y:auto}
-.logbody::-webkit-scrollbar{width:3px}
-.logbody::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
-.logi{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(82,196,122,.07);animation:sli .3s ease both}
-@keyframes sli{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.lbody{padding:12px 18px 16px;max-height:280px;overflow-y:auto}
+.lbody::-webkit-scrollbar{width:3px}
+.lbody::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
+.logi{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid rgba(82,196,122,.06);animation:sli .3s ease both}
+@keyframes sli{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
 .logi:last-child{border-bottom:none}
-.liico{font-size:1.1rem;flex-shrink:0;margin-top:2px}
-.limsg{font-size:.77rem;color:var(--txt);margin-bottom:2px}
-.litm{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
-/* Summary panel */
-.sumpanel{padding:18px;display:flex;flex-direction:column;justify-content:space-between;min-height:200px}
-/* Footer */
-footer{border-top:1px solid var(--border);padding:18px 0;display:flex;justify-content:space-between;align-items:center;margin-top:28px;flex-wrap:wrap;gap:8px}
-footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
-/* Fade-up animation */
-.fu{opacity:0;transform:translateY(18px);animation:fu .45s ease forwards}
-@keyframes fu{to{opacity:1;transform:translateY(0)}}
-.d1{animation-delay:.07s}.d2{animation-delay:.14s}.d3{animation-delay:.21s}
-.d4{animation-delay:.28s}.d5{animation-delay:.35s}.d6{animation-delay:.42s}
+.liico{font-size:1rem;flex-shrink:0;margin-top:1px}
+.limsg{font-size:.73rem;color:var(--txt);margin-bottom:1px}
+.litm{font-size:.6rem;color:var(--dim);font-family:'Space Mono',monospace}
 
-/* Responsive */
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:16px 0;
+  display:flex;justify-content:space-between;align-items:center;margin-top:24px;flex-wrap:wrap;gap:6px}
+footer div{font-size:.67rem;color:var(--dim);font-family:'Space Mono',monospace}
+
+/* ANIMATIONS */
+.fu{opacity:0;transform:translateY(16px);animation:fu .4s ease forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.d1{animation-delay:.06s}.d2{animation-delay:.12s}.d3{animation-delay:.18s}
+.d4{animation-delay:.24s}.d5{animation-delay:.30s}
+
+/* RESPONSIVE */
 @media(max-width:1100px){.agrid{grid-template-columns:repeat(2,1fr)}.botrow{grid-template-columns:1fr}}
-@media(max-width:760px){.sr{grid-template-columns:1fr 1fr}.chrow{grid-template-columns:1fr}.agrid{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.sr{grid-template-columns:1fr 1fr}.chrow{grid-template-columns:1fr}}
 @media(max-width:480px){.sr{grid-template-columns:1fr}.agrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<!-- ── HEADER ── -->
+<!-- HEADER -->
 <header class="fu">
   <div class="brand">
     <div class="bico">🌿</div>
     <div>
-      <h1>Mini Greenhouse</h1>
-      <p>Smart Control · ESP32 + Firebase</p>
+      <h1>Smart Greenhouse</h1>
+      <p>ESP32 · Firebase Realtime · GPIO16 PompaAir</p>
     </div>
   </div>
   <div class="hdr-r">
-    <div class="livebadge" style="background:rgba(212,255,78,.1);border-color:rgba(212,255,78,.25);color:var(--lime)">
-      <div class="pdot" style="background:var(--lime)"></div>⚙ FULL AUTO
+    <div class="badge" style="background:rgba(212,255,78,.1);border-color:rgba(212,255,78,.22);color:var(--lime)">
+      <div class="dot" style="background:var(--lime)"></div>⚙ FULL AUTO
     </div>
-    <div class="livebadge"><div class="pdot"></div>LIVE</div>
-    <span class="upd" id="upd">--:--:--</span>
+    <div class="badge"><div class="dot"></div>LIVE</div>
+    <span id="upd">--:--:--</span>
   </div>
 </header>
 
-<!-- ── SENSOR CARDS ── -->
+<!-- SENSOR CARDS -->
 <div class="sr fu d1">
-  <!-- Suhu -->
-  <div class="sc2 ct2">
-    <div class="bgico">🌡️</div>
+  <div class="sc ct">
+    <div class="bg">🌡️</div>
     <div class="slbl">Suhu Udara</div>
     <div class="sval" id="vT">—<span class="cu"> °C</span></div>
     <div class="sbar"><div class="sbf" id="bT" style="width:0%"></div></div>
-    <div class="strend" id="trT">— Menunggu data</div>
+    <div class="str" id="trT">— Menunggu data</div>
   </div>
-  <!-- Kelembaban Udara -->
-  <div class="sc2 ch2">
-    <div class="bgico">💧</div>
+  <div class="sc ch">
+    <div class="bg">💧</div>
     <div class="slbl">Kelembaban Udara</div>
     <div class="sval" id="vH">—<span class="cu"> %</span></div>
     <div class="sbar"><div class="sbf" id="bH" style="width:0%"></div></div>
-    <div class="strend" id="trH">Optimal 40–80%</div>
+    <div class="str" id="trH">Optimal 40–80%</div>
   </div>
-  <!-- Kelembaban Tanah -->
-  <div class="sc2 cs2">
-    <div class="bgico">🌱</div>
+  <div class="sc cs">
+    <div class="bg">🌱</div>
     <div class="slbl">Kelembaban Tanah</div>
     <div class="sval" id="vS">—<span class="cu"> %</span></div>
     <div class="sbar"><div class="sbf" id="bS" style="width:0%"></div></div>
-    <div class="strend" id="trS">— Menunggu data</div>
+    <div class="str" id="trS">— Menunggu data</div>
   </div>
-  <!-- Status Sistem -->
-  <div class="sc2 cst">
-    <div class="bgico">📡</div>
+  <div class="sc cx">
+    <div class="bg">📡</div>
     <div class="slbl">Status Sistem</div>
     <div class="sval" id="vSt">⏳ Menunggu…</div>
     <div class="sbar"><div class="sbf" id="bSt" style="width:100%"></div></div>
-    <div class="strend">Firebase: <span style="color:var(--g6)" id="fbConnTxt">Menghubungkan…</span></div>
+    <div class="str">Firebase: <span id="fbTxt" style="color:var(--muted)">Menghubungkan…</span></div>
   </div>
-  <!-- SD Card -->
-  <div class="sc2 csd" id="sdCard">
-    <div class="bgico">💾</div>
-    <div class="slbl">Status SD Card</div>
+  <div class="sc csd" id="sdCard">
+    <div class="bg">💾</div>
+    <div class="slbl">SD Card</div>
     <div class="sval" id="vSD">⏳ Menunggu…</div>
     <div class="sbar"><div class="sbf" id="bSD" style="width:0%"></div></div>
-    <div class="strend" id="trSD">Menunggu data dari Firebase</div>
+    <div class="str" id="trSD">Menunggu Firebase</div>
   </div>
 </div>
 
-<!-- ── CHARTS ── -->
-<div class="chrow fu d3">
+<!-- CHARTS -->
+<div class="chrow fu d2">
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Grafik Sensor Realtime</div>
-      <div class="chtabs">
+      <div class="ctabs">
         <button class="ctb act" onclick="swCh('temp',this)">Suhu</button>
         <button class="ctb" onclick="swCh('hum',this)">Kelembaban</button>
         <button class="ctb" onclick="swCh('all',this)">Semua</button>
@@ -285,180 +282,160 @@ footer div{font-size:.7rem;color:var(--dim);font-family:'Space Mono',monospace}
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Grafik Kelembaban Tanah</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:20px;height:2px;background:rgba(255,82,82,.6);border-radius:1px"></div>
-        <span style="font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace">Batas 40%</span>
+      <div style="display:flex;align-items:center;gap:7px">
+        <div style="width:18px;height:2px;background:rgba(255,82,82,.55);border-radius:1px"></div>
+        <span style="font-size:.62rem;color:var(--muted);font-family:'Space Mono',monospace">Batas 40%</span>
       </div>
     </div>
     <div class="cbox"><canvas id="sc"></canvas></div>
   </div>
 </div>
 
-<!-- ── ACTUATOR PANEL ── -->
-<div class="asec fu d4">
+<!-- ACTUATOR PANEL -->
+<div class="asec fu d3">
   <div class="asec-hd">
     <h2>Status Aktuator</h2>
-    <div class="ainfo">⚙ Otomatis · Pompa Nutrisi dapat dikontrol manual via tombol di bawah</div>
+    <div class="ainfo">⚙ Peltier, Fan, Pompa Air = Auto ESP32 · Pompa Nutrisi = Manual Web</div>
   </div>
-
   <div class="agrid">
 
-    <!-- Water Pump (Auto) -->
-    <div class="acard warn" id="ac-pump">
-      <div class="atop">
-        <div>
-          <div class="aico">💧</div>
-          <div class="aname">Water Pump</div>
-          <div class="asub">IRIGASI TANAMAN</div>
-        </div>
-        <div class="status-pill" id="sp-pump">⭕ OFF</div>
-      </div>
-      <div class="mbadge mba">⚙ AUTO · ESP32</div>
-      <div class="condbar">
-        <div class="condlbl"><span>Soil Moisture</span><span id="cv-pump">—</span></div>
-        <div class="condtrk"><div class="condfill" id="cf-pump" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
-      </div>
-      <div class="statrow">
-        <div class="astat"><div class="adot"></div><span id="as-pump">STANDBY</span></div>
-        <span style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">ON jika &lt;40%</span>
-      </div>
-    </div>
-
-    <!-- Fan (Auto) -->
-    <div class="acard cool" id="ac-fan1">
-      <div class="atop">
-        <div>
-          <div class="aico"><span class="spn">🌀</span></div>
-          <div class="aname">Fan</div>
-          <div class="asub">SIRKULASI UDARA</div>
-        </div>
-        <div class="status-pill" id="sp-fan1">⭕ OFF</div>
-      </div>
-      <div class="mbadge mba">⚙ AUTO · ESP32</div>
-      <div class="condbar">
-        <div class="condlbl"><span>Suhu Saat Ini</span><span id="cv-fan1">—</span></div>
-        <div class="condtrk"><div class="condfill" id="cf-fan1" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
-      </div>
-      <div class="statrow">
-        <div class="astat"><div class="adot"></div><span id="as-fan1">STANDBY</span></div>
-        <span style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">ON jika &gt;25°C</span>
-      </div>
-    </div>
-
-    <!-- Peltier (Auto) -->
+    <!-- PELTIER -->
     <div class="acard cool" id="ac-pelt">
       <div class="atop">
         <div>
           <div class="aico">❄️</div>
           <div class="aname">Peltier Cooler</div>
-          <div class="asub">PENDINGIN RUANG</div>
+          <div class="asub">PENDINGIN · GPIO 32</div>
         </div>
-        <div class="status-pill" id="sp-pelt">⭕ OFF</div>
+        <div class="spill" id="sp-pelt">⭕ OFF</div>
       </div>
-      <div class="mbadge mba">⚙ AUTO · ESP32</div>
-      <div class="condbar">
-        <div class="condlbl"><span>Suhu Saat Ini</span><span id="cv-pelt">—</span></div>
-        <div class="condtrk"><div class="condfill" id="cf-pelt" style="width:0%;background:linear-gradient(90deg,#006fd6,var(--blue))"></div></div>
+      <div class="mbadge mba">⚙ AUTO · Suhu &gt;25°C</div>
+      <div class="cbar">
+        <div class="clbl"><span>Suhu saat ini</span><span id="cv-pelt">—</span></div>
+        <div class="ctrk"><div class="cfill" id="cf-pelt" style="width:0%;background:linear-gradient(90deg,#006fd6,var(--blue))"></div></div>
       </div>
-      <div class="statrow">
+      <div class="srow">
         <div class="astat"><div class="adot"></div><span id="as-pelt">STANDBY</span></div>
-        <span style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">ON jika &gt;25°C</span>
+        <span class="hint">ON jika &gt;25°C</span>
       </div>
     </div>
 
-    <!-- Peristaltic Pump (Manual via Web → /Control/PompaNutrisi) -->
+    <!-- FAN -->
+    <div class="acard cool" id="ac-fan">
+      <div class="atop">
+        <div>
+          <div class="aico"><span class="spn">🌀</span></div>
+          <div class="aname">Fan</div>
+          <div class="asub">SIRKULASI · GPIO 25</div>
+        </div>
+        <div class="spill" id="sp-fan">⭕ OFF</div>
+      </div>
+      <div class="mbadge mba">⚙ AUTO · Suhu &gt;25°C</div>
+      <div class="cbar">
+        <div class="clbl"><span>Suhu saat ini</span><span id="cv-fan">—</span></div>
+        <div class="ctrk"><div class="cfill" id="cf-fan" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
+      </div>
+      <div class="srow">
+        <div class="astat"><div class="adot"></div><span id="as-fan">STANDBY</span></div>
+        <span class="hint">ON jika &gt;25°C</span>
+      </div>
+    </div>
+
+    <!-- POMPA AIR -->
+    <div class="acard warn" id="ac-pump">
+      <div class="atop">
+        <div>
+          <div class="aico">💧</div>
+          <div class="aname">Pompa Air</div>
+          <div class="asub">IRIGASI · GPIO 16</div>
+        </div>
+        <div class="spill" id="sp-pump">⭕ OFF</div>
+      </div>
+      <div class="mbadge mba">⚙ AUTO · Tanah &lt;40%</div>
+      <div class="cbar">
+        <div class="clbl"><span>Kelembaban tanah</span><span id="cv-pump">—</span></div>
+        <div class="ctrk"><div class="cfill" id="cf-pump" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
+      </div>
+      <div class="srow">
+        <div class="astat"><div class="adot"></div><span id="as-pump">STANDBY</span></div>
+        <span class="hint">ON jika &lt;40%</span>
+      </div>
+    </div>
+
+    <!-- POMPA PERISTALTIK (MANUAL) -->
     <div class="acard nutr" id="ac-nutr">
       <div class="atop">
         <div>
           <div class="aico">🧪</div>
-          <div class="aname">Peristaltik Pump</div>
-          <div class="asub">NUTRISI TANAMAN</div>
+          <div class="aname">Pompa Peristaltik</div>
+          <div class="asub">NUTRISI · GPIO 27</div>
         </div>
-        <div class="status-pill" id="sp-nutr">⭕ OFF</div>
+        <div class="spill" id="sp-nutr">⭕ OFF</div>
       </div>
-      <!-- Badge berubah antara AUTO dan MANUAL -->
-      <div class="mbadge" id="nutr-mode-badge" style="background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)">
-        ⚙ AUTO · Menunggu konfirmasi ESP32
+      <div class="mbadge mmn" id="nutr-badge">🖥 MANUAL · Kontrol Web</div>
+      <div class="cbar">
+        <div class="clbl"><span>Konfirmasi ESP32</span><span id="cv-nutr">Menunggu…</span></div>
+        <div class="ctrk"><div class="cfill" id="cf-nutr" style="width:0%;background:linear-gradient(90deg,#8b3bff,var(--violet))"></div></div>
       </div>
-      <div class="condbar">
-        <div class="condlbl"><span>Status Konfirmasi ESP32</span><span id="cv-nutr">Menunggu…</span></div>
-        <div class="condtrk"><div class="condfill" id="cf-nutr" style="width:0%;background:linear-gradient(90deg,#8b3bff,var(--violet))"></div></div>
-      </div>
-      <div class="statrow">
+      <div class="srow">
         <div class="astat"><div class="adot"></div><span id="as-nutr">STANDBY</span></div>
-        <span style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">Konfirmasi dari ESP32</span>
+        <span class="hint">Konfirmasi dari ESP32</span>
       </div>
-      <!-- TOMBOL MANUAL CONTROL -->
-      <!-- Menulis ke /Control/PompaNutrisi (int: 1=ON, 0=OFF) -->
-      <!-- Status aktual (ON/OFF) dikonfirmasi dari /Monitoring/PompaPeristaltik -->
-      <div class="ctrl-btns">
-        <button class="btn-on" id="btn-nutr-on" onclick="sendPompaNutrisi(1)">▶ ON Manual</button>
-        <button class="btn-off" id="btn-nutr-off" onclick="sendPompaNutrisi(0)">■ OFF</button>
-      </div>
-      <div class="ctrl-hint">Menulis ke /Control/PompaNutrisi → ESP32</div>
-      <div class="ctrl-feedback" id="nutr-feedback"></div>
-    </div>
-
-    <!-- System Summary -->
-    <div class="panel sumpanel">
-      <div>
-        <div class="pt" style="margin-bottom:14px"><i></i>Ringkasan Sistem</div>
-        <div id="sumlist" style="display:flex;flex-direction:column;gap:8px"></div>
-      </div>
-      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);text-align:center">
-        <div style="font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace;margin-bottom:4px">Health Score</div>
-        <div style="font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--lime)" id="hsc">—</div>
-        <div style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace">/ 100 pts</div>
+      <!-- Tombol Manual -->
+      <div class="ctrl-wrap">
+        <div class="ctrl-btns">
+          <button class="btn-on" id="btn-on" onclick="kirimPompa(1)">▶ ON</button>
+          <button class="btn-off" id="btn-off" onclick="kirimPompa(0)">■ OFF</button>
+        </div>
+        <div class="ctrl-hint">→ /Control/PompaNutrisi → ESP32</div>
+        <div class="ctrl-fb" id="ctrl-fb"></div>
       </div>
     </div>
 
-  </div><!-- /agrid -->
-</div><!-- /asec -->
+  </div>
+</div>
 
-<!-- ── BOTTOM ROW ── -->
-<div class="botrow fu d5">
-  <!-- History Table -->
+<!-- BOTTOM -->
+<div class="botrow fu d4">
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Riwayat Data</div>
-      <button onclick="expCSV()" style="background:rgba(82,196,122,.1);border:1px solid rgba(82,196,122,.22);color:var(--g6);border-radius:8px;padding:5px 14px;font-size:.68rem;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif">⬇ CSV</button>
+      <button onclick="expCSV()" style="background:rgba(82,196,122,.1);border:1px solid rgba(82,196,122,.2);
+        color:var(--g6);border-radius:7px;padding:4px 12px;font-size:.65rem;font-weight:700;
+        cursor:pointer;font-family:'Syne',sans-serif">⬇ CSV</button>
     </div>
-    <div class="hist-body">
+    <div class="hbody">
       <table>
-        <thead>
-          <tr>
-            <th>Waktu</th><th>Suhu</th><th>Hum</th><th>Tanah</th>
-            <th>Pump</th><th>Fan</th><th>Peltier</th><th>Nutrisi</th><th>Status</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Waktu</th><th>Suhu</th><th>Hum</th><th>Tanah</th>
+          <th>Peltier</th><th>Fan</th><th>Air</th><th>Nutrisi</th><th>Status</th>
+        </tr></thead>
         <tbody id="hbody"></tbody>
       </table>
     </div>
   </div>
-  <!-- Activity Log -->
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Log Aktivitas</div>
-      <span style="font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace" id="lcnt">0 logs</span>
+      <span style="font-size:.62rem;color:var(--muted);font-family:'Space Mono',monospace" id="lcnt">0 log</span>
     </div>
-    <div class="logbody" id="lbody"></div>
+    <div class="lbody" id="lbody"></div>
   </div>
 </div>
 
 <footer>
-  <div>MINI-GH v2.1 · ESP32 + DHT22 + Soil Sensor + OLED</div>
-  <div>Firebase Realtime DB · Arduino · © 2025</div>
+  <div>SMART GREENHOUSE · ESP32 · DHT22 · Soil · OLED · 4 Relay</div>
+  <div>Firebase Realtime DB · GPIO16=PompaAir · © 2025</div>
 </footer>
-</div><!-- /wrap -->
+</div>
 
 <script>
 'use strict';
 
-// ═══════════════════════════════════════════════════════════
-// KONFIGURASI FIREBASE
-// Pastikan nilai ini sama dengan yang di ESP32
-// ═══════════════════════════════════════════════════════════
-const FIREBASE_CONFIG = {
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE CONFIG
+// ═══════════════════════════════════════════════════════════════
+const FB_CONFIG = {
   apiKey:      "AIzaSyDq4cyOjlMICrkoHus1ZW5nTH-KEobSEs0",
   authDomain:  "projek-3-97a68.firebaseapp.com",
   databaseURL: "https://projek-3-97a68-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -466,39 +443,32 @@ const FIREBASE_CONFIG = {
   appId:       "1:981835425647:web:d06b87fa4b9c8a6bf36a9a"
 };
 
-// ═══════════════════════════════════════════════════════════
-// CANONICAL FIREBASE PATHS — satu sumber kebenaran
-// Jika ada perubahan path, cukup edit di sini
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE PATH — satu tempat untuk semua path
+// Jika ada perubahan, cukup edit di sini
+// ═══════════════════════════════════════════════════════════════
 const PATH = {
-  // Data sensor & status aktuator (ESP32 → Firebase → Web)
-  monitoring: {
-    suhu:             '/Monitoring/Suhu',
-    kelembaban:       '/Monitoring/Kelembaban',
-    tanah:            '/Monitoring/Tanah',
-    sdCard:           '/Monitoring/SDCard',
-    peltier:          '/Monitoring/Peltier',
-    kipas:            '/Monitoring/Kipas',
-    pompaAir:         '/Monitoring/PompaAir',
-    pompaPeristaltik: '/Monitoring/PompaPeristaltik',
-  },
-  // Kontrol perintah (Web → Firebase → ESP32)
-  control: {
-    pompaNutrisi: '/Control/PompaNutrisi',  // int: 1=ON, 0=OFF
-  }
+  suhu:             '/Monitoring/Suhu',
+  kelembaban:       '/Monitoring/Kelembaban',
+  tanah:            '/Monitoring/Tanah',
+  sdCard:           '/Monitoring/SDCard',
+  peltier:          '/Monitoring/Peltier',
+  kipas:            '/Monitoring/Kipas',
+  pompaAir:         '/Monitoring/PompaAir',
+  pompaPeristaltik: '/Monitoring/PompaPeristaltik',
+  pompaNutrisi:     '/Control/PompaNutrisi',  // int: 1=ON, 0=OFF
 };
 
-// ═══════════════════════════════════════════════════════════
-// GUARD — Pastikan Firebase SDK berhasil dimuat
-// ═══════════════════════════════════════════════════════════
+// Guard SDK
 if (typeof firebase === 'undefined') {
   document.body.innerHTML = `
-    <div style="position:fixed;inset:0;background:#060f0a;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:monospace;color:#ff5252;text-align:center;padding:24px">
+    <div style="position:fixed;inset:0;background:#060f0a;display:flex;align-items:center;
+      justify-content:center;flex-direction:column;gap:14px;font-family:monospace;
+      color:#ff5252;text-align:center;padding:24px">
       <div style="font-size:2rem">🚨</div>
-      <div style="font-size:1.1rem;font-weight:700">Firebase SDK gagal dimuat</div>
-      <div style="font-size:.85rem;color:#7de8a0;max-width:400px;line-height:1.6">
-        Pastikan terhubung ke internet, lalu:<br>
-        1. Hard refresh (Ctrl+Shift+R)<br>
+      <div style="font-size:1rem;font-weight:700">Firebase SDK gagal dimuat</div>
+      <div style="font-size:.82rem;color:#7de8a0;max-width:380px;line-height:1.6">
+        1. Hard refresh: Ctrl+Shift+R<br>
         2. Nonaktifkan ad-blocker<br>
         3. Coba browser lain
       </div>
@@ -506,52 +476,48 @@ if (typeof firebase === 'undefined') {
   throw new Error('Firebase SDK not loaded');
 }
 
-// ═══════════════════════════════════════════════════════════
-// INISIALISASI FIREBASE
-// ═══════════════════════════════════════════════════════════
-firebase.initializeApp(FIREBASE_CONFIG);
+firebase.initializeApp(FB_CONFIG);
 const db = firebase.database();
 
-// ═══════════════════════════════════════════════════════════
-// STATE GLOBAL
-// ═══════════════════════════════════════════════════════════
-const MAX_CHART_POINTS = 24;
-const chartLabels = [], dT = [], dH = [], dS = [];
-const history = [];
-const activityLogs = [];
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const MAX = 24;
+const labels = [], dT = [], dH = [], dS = [];
+const histori = [], logs = [];
 
-let prevTemp = null, prevHum = null, prevSoil = null;
-let firstDataReceived = false;
+let prevT = null, prevH = null, prevS = null;
+let sudahTerimaData = false;
+let btnLocked = false;
 
-// Status aktuator — diisi dari konfirmasi /Monitoring/ ESP32
-const actuators = {
-  pump: { on: false },
-  fan:  { on: false },
-  pelt: { on: false },
-  nutr: { on: false },
+const act = {
+  pelt: false,
+  fan:  false,
+  pump: false,
+  nutr: false,
 };
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // CHART SETUP
-// ═══════════════════════════════════════════════════════════
-const BASE_CHART_OPT = {
+// ═══════════════════════════════════════════════════════════════
+const baseOpt = {
   responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
   plugins: {
-    legend: { labels: { color: '#5d9471', font: { family: "'Space Mono',monospace", size: 9 }, boxWidth: 10, padding: 12 } },
-    tooltip: { backgroundColor: 'rgba(6,15,10,.93)', borderColor: 'rgba(82,196,122,.25)', borderWidth: 1,
-      titleColor: '#b0ffcc', bodyColor: '#5d9471', padding: 10,
-      titleFont: { family: "'Space Mono',monospace", size: 10 },
-      bodyFont: { family: "'Space Mono',monospace", size: 10 } }
+    legend: { labels: { color: '#5d9471', font: { family: "'Space Mono',monospace", size: 9 }, boxWidth: 9, padding: 10 } },
+    tooltip: { backgroundColor: 'rgba(6,15,10,.94)', borderColor: 'rgba(82,196,122,.22)', borderWidth: 1,
+      titleColor: '#b0ffcc', bodyColor: '#5d9471', padding: 9,
+      titleFont: { family: "'Space Mono',monospace", size: 9 },
+      bodyFont:  { family: "'Space Mono',monospace", size: 9 } }
   },
   scales: {
     x: { ticks: { color: '#2a4d36', font: { family: "'Space Mono',monospace", size: 8 }, maxTicksLimit: 7 }, grid: { color: 'rgba(82,196,122,.04)' } },
-    y: { ticks: { color: '#2a4d36', font: { family: "'Space Mono',monospace", size: 9 } }, grid: { color: 'rgba(82,196,122,.04)' } }
+    y: { ticks: { color: '#2a4d36', font: { family: "'Space Mono',monospace", size: 8 } }, grid: { color: 'rgba(82,196,122,.04)' } }
   }
 };
 
-const CHART_DATASETS = {
+const ds = {
   temp: [{ label: 'Suhu (°C)', data: dT, borderColor: '#ffad3b', backgroundColor: 'rgba(255,173,59,.08)', tension: .4, fill: true, pointRadius: 0, borderWidth: 2 }],
-  hum:  [{ label: 'Kelembaban Udara (%)', data: dH, borderColor: '#43d9f5', backgroundColor: 'rgba(67,217,245,.08)', tension: .4, fill: true, pointRadius: 0, borderWidth: 2 }],
+  hum:  [{ label: 'Kelembaban (%)', data: dH, borderColor: '#43d9f5', backgroundColor: 'rgba(67,217,245,.08)', tension: .4, fill: true, pointRadius: 0, borderWidth: 2 }],
   all:  [
     { label: 'Suhu', data: dT, borderColor: '#ffad3b', backgroundColor: 'transparent', tension: .4, fill: false, pointRadius: 0, borderWidth: 2 },
     { label: 'Hum',  data: dH, borderColor: '#43d9f5', backgroundColor: 'transparent', tension: .4, fill: false, pointRadius: 0, borderWidth: 2 },
@@ -559,91 +525,116 @@ const CHART_DATASETS = {
 };
 
 const mainChart = new Chart(document.getElementById('mc').getContext('2d'), {
-  type: 'line', data: { labels: chartLabels, datasets: CHART_DATASETS.temp },
-  options: JSON.parse(JSON.stringify(BASE_CHART_OPT))
+  type: 'line', data: { labels, datasets: ds.temp },
+  options: JSON.parse(JSON.stringify(baseOpt))
 });
 
-const soilOpt = JSON.parse(JSON.stringify(BASE_CHART_OPT));
+const soilOpt = JSON.parse(JSON.stringify(baseOpt));
 soilOpt.scales.y = { ...soilOpt.scales.y, min: 0, max: 100 };
 const soilChart = new Chart(document.getElementById('sc').getContext('2d'), {
   type: 'line',
   data: {
-    labels: chartLabels,
+    labels,
     datasets: [
-      { label: 'Kelembaban Tanah (%)', data: dS, borderColor: '#52c47a', backgroundColor: 'rgba(82,196,122,.1)', tension: .4, fill: true, pointRadius: 0, borderWidth: 2.5 },
-      { label: 'Batas Bawah (40%)', data: Array(MAX_CHART_POINTS).fill(40), borderColor: 'rgba(255,82,82,.55)', backgroundColor: 'transparent', borderDash: [6, 3], pointRadius: 0, borderWidth: 1.5 }
+      { label: 'Tanah (%)', data: dS, borderColor: '#52c47a', backgroundColor: 'rgba(82,196,122,.1)', tension: .4, fill: true, pointRadius: 0, borderWidth: 2.5 },
+      { label: 'Batas (40%)', data: Array(MAX).fill(40), borderColor: 'rgba(255,82,82,.5)', backgroundColor: 'transparent', borderDash: [5, 3], pointRadius: 0, borderWidth: 1.5 }
     ]
   },
   options: soilOpt
 });
 
-function swCh(mode, btn) {
+function swCh(m, btn) {
   document.querySelectorAll('.ctb').forEach(b => b.classList.remove('act'));
   btn.classList.add('act');
-  mainChart.data.datasets = CHART_DATASETS[mode];
+  mainChart.data.datasets = ds[m];
   mainChart.update();
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // HELPER: Parse status aktuator dari Firebase
-// ESP32 menulis String "ON"/"OFF" ke semua node aktuator
-// Fungsi ini menangani semua format yang mungkin
-// ═══════════════════════════════════════════════════════════
-function parseActuatorStatus(raw) {
+// ESP32 menulis String "ON"/"OFF" — fungsi ini handle semua format
+// ═══════════════════════════════════════════════════════════════
+function parseStatus(raw) {
   if (raw === null || raw === undefined) return false;
   const s = String(raw).trim().toUpperCase();
   return s === 'ON' || s === '1' || s === 'TRUE';
 }
 
-// ═══════════════════════════════════════════════════════════
-// UPDATE ACTUATOR CARD UI
-// ═══════════════════════════════════════════════════════════
-const ACT_NAMES = { pump: '💧 Water Pump', fan: '🌀 Fan', pelt: '❄️ Peltier', nutr: '🧪 Nutri Pump' };
+// ═══════════════════════════════════════════════════════════════
+// UPDATE UI AKTUATOR
+// ═══════════════════════════════════════════════════════════════
+const NAMA = { pelt: '❄️ Peltier', fan: '🌀 Fan', pump: '💧 Pompa Air', nutr: '🧪 Pompa Nutrisi' };
 
-function setActuatorUI(id, isOn) {
-  const wasOn = actuators[id].on;
-  actuators[id].on = isOn;
+function setAct(id, nyala) {
+  const wasOn = act[id];
+  act[id] = nyala;
 
-  const card = document.getElementById(`ac-${id === 'fan' ? 'fan1' : id}`);
-  const pill = document.getElementById(`sp-${id === 'fan' ? 'fan1' : id}`);
-  const dot  = document.getElementById(`as-${id === 'fan' ? 'fan1' : id}`);
+  const card = document.getElementById('ac-' + id);
+  const pill = document.getElementById('sp-' + id);
+  const stat = document.getElementById('as-' + id);
 
   if (!card) return;
+  nyala ? card.classList.add('on') : card.classList.remove('on');
+  if (pill) pill.textContent = nyala ? '🟢 ON' : '⭕ OFF';
+  if (stat) stat.textContent = nyala ? 'AKTIF' : 'STANDBY';
 
-  if (isOn) card.classList.add('on');
-  else       card.classList.remove('on');
-
-  if (pill) pill.textContent = isOn ? '🟢 ON' : '⭕ OFF';
-  if (dot)  dot.textContent  = isOn ? 'AKTIF' : 'STANDBY';
-
-  // Log perubahan status
-  if (wasOn !== isOn) {
-    addLog(isOn ? 'on' : 'off', `[ESP32] ${ACT_NAMES[id]} → ${isOn ? '🟢 ON' : '⭕ OFF'}`, nowStr());
+  if (wasOn !== nyala) {
+    addLog(nyala ? 'on' : 'off',
+      `[ESP32] ${NAMA[id]} → ${nyala ? '🟢 ON' : '⭕ OFF'}`,
+      nowStr());
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// UPDATE UI DARI DATA FIREBASE /Monitoring
-// ═══════════════════════════════════════════════════════════
-function applyMonitoringData(data) {
+// ═══════════════════════════════════════════════════════════════
+// UPDATE SD CARD STATUS
+// ═══════════════════════════════════════════════════════════════
+function updateSD(raw) {
+  const card = document.getElementById('sdCard');
+  const val  = String(raw).trim().toUpperCase();
+
+  const isSkip = val === 'SKIP' || val === '' || val === 'NONE';
+  const isOk   = ['AKTIF','ACTIVE','OK','1','TRUE','READY'].includes(val);
+
+  card.classList.remove('err');
+
+  if (isSkip) {
+    document.getElementById('vSD').textContent = '⏭ SKIP';
+    document.getElementById('bSD').style.width  = '30%';
+    document.getElementById('trSD').innerHTML   = `<span style="color:var(--muted)">Tidak dipasang (opsional)</span>`;
+  } else if (isOk) {
+    document.getElementById('vSD').textContent = '💾 AKTIF';
+    document.getElementById('bSD').style.width  = '100%';
+    document.getElementById('trSD').innerHTML   = `<span style="color:var(--g6)">✓ SD Card siap</span>`;
+  } else {
+    card.classList.add('err');
+    document.getElementById('vSD').textContent = '⚠ ' + val;
+    document.getElementById('bSD').style.width  = '60%';
+    document.getElementById('trSD').innerHTML   = `<span style="color:var(--amber)">Status: ${raw}</span>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN UPDATE — dipanggil tiap ada perubahan Firebase /Monitoring
+// ═══════════════════════════════════════════════════════════════
+function update(data) {
   const temp = parseFloat(data.Suhu);
   const hum  = parseFloat(data.Kelembaban);
   const soil = parseFloat(data.Tanah);
 
   if (isNaN(temp) || isNaN(hum) || isNaN(soil)) {
-    addLog('warn', '⚠ Data tidak valid dari Firebase.', nowStr());
+    addLog('warn', '⚠ Data tidak valid dari Firebase!', nowStr());
     return;
   }
 
   const tStr = nowStr();
 
-  // ── Chart data ──
-  chartLabels.push(tStr); dT.push(temp); dH.push(hum); dS.push(soil);
-  if (chartLabels.length > MAX_CHART_POINTS) { chartLabels.shift(); dT.shift(); dH.shift(); dS.shift(); }
-  soilChart.data.datasets[1].data = Array(chartLabels.length).fill(40);
+  // ── Chart ──
+  labels.push(tStr); dT.push(temp); dH.push(hum); dS.push(soil);
+  if (labels.length > MAX) { labels.shift(); dT.shift(); dH.shift(); dS.shift(); }
+  soilChart.data.datasets[1].data = Array(labels.length).fill(40);
   mainChart.update(); soilChart.update();
 
-  // ── Sensor display cards ──
+  // ── Sensor cards ──
   document.getElementById('vT').innerHTML = `${temp.toFixed(1)}<span class="cu"> °C</span>`;
   document.getElementById('vH').innerHTML = `${hum.toFixed(1)}<span class="cu"> %</span>`;
   document.getElementById('vS').innerHTML = `${soil}<span class="cu"> %</span>`;
@@ -651,274 +642,193 @@ function applyMonitoringData(data) {
   document.getElementById('bH').style.width = `${Math.min(100, hum)}%`;
   document.getElementById('bS').style.width = `${Math.min(100, soil)}%`;
 
-  // ── Trend suhu ──
-  if (prevTemp !== null) {
-    const delta = (temp - prevTemp).toFixed(1);
-    const color = delta > 0 ? 'var(--amber)' : 'var(--blue)';
-    const arrow = delta > 0 ? '↗' : '↘';
-    document.getElementById('trT').innerHTML = `<span style="color:${color}">${arrow} ${Math.abs(delta)}°C</span> dari sebelumnya`;
+  // ── Trend ──
+  if (prevT !== null) {
+    const d = (temp - prevT).toFixed(1);
+    const c = d > 0 ? 'var(--amber)' : 'var(--blue)';
+    document.getElementById('trT').innerHTML =
+      `<span style="color:${c}">${d > 0 ? '↗' : '↘'} ${Math.abs(d)}°C</span> dari sebelumnya`;
   } else {
     document.getElementById('trT').textContent = '— Data pertama diterima';
   }
-
-  // ── Trend tanah ──
   document.getElementById('trS').innerHTML = soil < 40
     ? `<span style="color:var(--red)">⚠ Perlu disiram!</span>`
-    : `<span style="color:var(--g6)">✓ Tidak perlu disiram</span>`;
+    : `<span style="color:var(--g6)">✓ Cukup lembab</span>`;
 
-  // ── Status sistem ──
-  const stat = systemStatus(temp, hum, soil);
-  const statIcon = { NORMAL: '🟢', HANGAT: '🟡', WASPADA: '🟠', KRITIS: '🔴' }[stat] || '🟢';
-  document.getElementById('vSt').textContent = `${statIcon} ${stat}`;
+  // ── Sistem status ──
+  const stat = sysStatus(temp, hum, soil);
+  const ico  = { NORMAL: '🟢', HANGAT: '🟡', WASPADA: '🟠', KRITIS: '🔴' }[stat] || '🟢';
+  document.getElementById('vSt').textContent = `${ico} ${stat}`;
 
   // ── SD Card ──
-  const sdRaw = data.SDCard;
-  if (sdRaw !== null && sdRaw !== undefined) updateSDCard(sdRaw);
+  if (data.SDCard !== undefined && data.SDCard !== null) updateSD(data.SDCard);
 
-  // ── Aktuator — baca dari /Monitoring/ (konfirmasi ESP32) ──
-  // PENTING: Ini adalah status AKTUAL dari ESP32, bukan dari tombol web
-  setActuatorUI('pump', parseActuatorStatus(data.PompaAir));
-  setActuatorUI('fan',  parseActuatorStatus(data.Kipas));
-  setActuatorUI('pelt', parseActuatorStatus(data.Peltier));
-  setActuatorUI('nutr', parseActuatorStatus(data.PompaPeristaltik));
+  // ── Aktuator: baca dari /Monitoring (konfirmasi ESP32) ──
+  setAct('pelt', parseStatus(data.Peltier));
+  setAct('fan',  parseStatus(data.Kipas));
+  setAct('pump', parseStatus(data.PompaAir));
+  setAct('nutr', parseStatus(data.PompaPeristaltik));
 
-  // ── Update detail card aktuator ──
-  document.getElementById('cv-pump').textContent = `${soil}%`;
-  document.getElementById('cf-pump').style.width = `${Math.min(100, soil)}%`;
-  document.getElementById('cv-fan1').textContent = `${temp.toFixed(1)}°C`;
-  document.getElementById('cf-fan1').style.width = `${Math.min(100, Math.max(0, ((temp-15)/30)*100))}%`;
+  // ── Detail card aktuator ──
+  const pct = (v, min, max) => `${Math.min(100, Math.max(0, ((v - min) / (max - min)) * 100)).toFixed(0)}%`;
   document.getElementById('cv-pelt').textContent = `${temp.toFixed(1)}°C`;
-  document.getElementById('cf-pelt').style.width = `${Math.min(100, Math.max(0, ((temp-15)/30)*100))}%`;
+  document.getElementById('cf-pelt').style.width  = pct(temp, 15, 45);
+  document.getElementById('cv-fan').textContent  = `${temp.toFixed(1)}°C`;
+  document.getElementById('cf-fan').style.width   = pct(temp, 15, 45);
+  document.getElementById('cv-pump').textContent = `${soil}%`;
+  document.getElementById('cf-pump').style.width  = `${Math.min(100, soil)}%`;
 
-  // ── Peristaltik: tampilkan status konfirmasi dari ESP32 ──
-  const nutrOn = parseActuatorStatus(data.PompaPeristaltik);
-  document.getElementById('cv-nutr').textContent = nutrOn ? '✅ Aktif (konfirmasi ESP32)' : '⭕ Tidak aktif';
-  document.getElementById('cf-nutr').style.width = nutrOn ? '100%' : '0%';
-  // Update mode badge untuk peristaltik
-  document.getElementById('nutr-mode-badge').textContent = nutrOn ? '▶ AKTIF (dari ESP32)' : '⚙ Menunggu perintah';
-  // Update highlight tombol sesuai status konfirmasi dari ESP32
-  updateNutrisiButtonState(nutrOn);
+  const nutrOn = act.nutr;
+  document.getElementById('cv-nutr').textContent  = nutrOn ? '✅ Aktif (konfirmasi)' : '⭕ Tidak aktif';
+  document.getElementById('cf-nutr').style.width   = nutrOn ? '100%' : '0%';
+  updateNutrBtn(nutrOn);
 
-  // ── Alert kondisi kritis ──
-  if (soil < 40 && !actuators.pump.on) addLog('alert', '💧 Tanah kering! Menunggu Water Pump dari ESP32…', tStr);
-  if (temp > 35) addLog('alert', `🔥 Suhu ${temp.toFixed(1)}°C! Sistem pendingin seharusnya aktif.`, tStr);
+  // ── Alert ──
+  if (soil < 40 && !act.pump) addLog('alert', '💧 Tanah kering! Pompa air aktif otomatis.', tStr);
+  if (temp > 35)              addLog('alert', `🔥 Suhu ${temp.toFixed(1)}°C! Sistem pendingin aktif.`, tStr);
 
-  // ── History table ──
-  history.push({
+  // ── Histori ──
+  histori.push({
     time: tStr, temp: temp.toFixed(1), hum: hum.toFixed(1), soil,
-    pump: actuators.pump.on, fan: actuators.fan.on, pelt: actuators.pelt.on, nutr: actuators.nutr.on,
+    pelt: act.pelt, fan: act.fan, pump: act.pump, nutr: act.nutr,
     status: stat
   });
-  if (history.length > 80) history.shift();
-  renderHistory();
-  renderSummary(temp, hum, soil);
+  if (histori.length > 80) histori.shift();
+  renderHistori();
 
   document.getElementById('upd').textContent = tStr;
-  prevTemp = temp; prevHum = hum; prevSoil = soil;
+  prevT = temp; prevH = hum; prevS = soil;
 }
 
-// ═══════════════════════════════════════════════════════════
-// KONTROL MANUAL POMPA PERISTALTIK
+// ═══════════════════════════════════════════════════════════════
+// KONTROL MANUAL POMPA NUTRISI
 // Menulis ke /Control/PompaNutrisi (int: 1=ON, 0=OFF)
-// Status aktual dikonfirmasi lewat /Monitoring/PompaPeristaltik
-// ═══════════════════════════════════════════════════════════
-let nutriBtnLocked = false; // Cegah spam klik
+// Status aktual dikonfirmasi dari /Monitoring/PompaPeristaltik
+// ═══════════════════════════════════════════════════════════════
+function kirimPompa(val) {
+  if (btnLocked) return;
+  btnLocked = true;
 
-function sendPompaNutrisi(val) {
-  if (nutriBtnLocked) return;
-  nutriBtnLocked = true;
+  const fb    = document.getElementById('ctrl-fb');
+  const btnOn = document.getElementById('btn-on');
+  const btnOff= document.getElementById('btn-off');
 
-  const feedback = document.getElementById('nutr-feedback');
-  const btnOn    = document.getElementById('btn-nutr-on');
-  const btnOff   = document.getElementById('btn-nutr-off');
+  btnOn.disabled = btnOff.disabled = true;
+  showFb(fb, 'wait', `📡 Mengirim ${val === 1 ? 'ON' : 'OFF'} ke ESP32…`);
+  addLog('info', `[WEB] Kirim PompaNutrisi=${val} ke Firebase`, nowStr());
 
-  btnOn.disabled = true;
-  btnOff.disabled = true;
-  showFeedback(feedback, 'wait', `📡 Mengirim perintah ${val === 1 ? 'ON' : 'OFF'} ke ESP32…`);
-  addLog('info', `[WEB] Mengirim perintah PompaNutrisi = ${val} ke /Control/PompaNutrisi`, nowStr());
-
-  db.ref(PATH.control.pompaNutrisi).set(val)
+  db.ref(PATH.pompaNutrisi).set(val)
     .then(() => {
-      const msg = val === 1
+      showFb(fb, 'ok', val === 1
         ? '✅ Perintah ON terkirim! Menunggu konfirmasi ESP32…'
-        : '✅ Perintah OFF terkirim! Menunggu konfirmasi ESP32…';
-      showFeedback(feedback, 'ok', msg);
-      addLog('on', `[WEB → Firebase] PompaNutrisi = ${val} ✓`, nowStr());
-      // Status aktual akan diupdate oleh listener /Monitoring/PompaPeristaltik
+        : '✅ Perintah OFF terkirim! Menunggu konfirmasi ESP32…');
+      addLog('on', `[WEB→FB] /Control/PompaNutrisi = ${val} ✓`, nowStr());
     })
     .catch(err => {
-      showFeedback(feedback, 'err', `🚨 Gagal kirim: ${err.message}`);
-      addLog('alert', `[WEB] Gagal kirim PompaNutrisi: ${err.message}`, nowStr());
+      showFb(fb, 'err', `🚨 Gagal: ${err.message}`);
+      addLog('alert', `[WEB] Gagal kirim: ${err.message}`, nowStr());
     })
     .finally(() => {
       setTimeout(() => {
-        btnOn.disabled = false;
-        btnOff.disabled = false;
-        nutriBtnLocked = false;
-      }, 2000); // Cooldown 2 detik
+        btnOn.disabled = btnOff.disabled = false;
+        btnLocked = false;
+      }, 2000);
     });
 }
 
-// Tampilkan feedback tombol
-function showFeedback(el, type, msg) {
-  el.className = `ctrl-feedback show ${type}`;
+function showFb(el, type, msg) {
+  el.className = `ctrl-fb show ${type}`;
   el.textContent = msg;
-  if (type !== 'wait') {
-    setTimeout(() => { el.className = 'ctrl-feedback'; }, 4000);
-  }
+  if (type !== 'wait') setTimeout(() => { el.className = 'ctrl-fb'; }, 4000);
 }
 
-// Update highlight tombol ON/OFF sesuai status konfirmasi ESP32
-function updateNutrisiButtonState(isOn) {
-  const btnOn  = document.getElementById('btn-nutr-on');
-  const btnOff = document.getElementById('btn-nutr-off');
+function updateNutrBtn(isOn) {
+  const btnOn  = document.getElementById('btn-on');
+  const btnOff = document.getElementById('btn-off');
   if (!btnOn || !btnOff) return;
-  btnOn.className  = isOn ? 'btn-on active-state'  : 'btn-on';
-  btnOff.className = isOn ? 'btn-off'               : 'btn-off active-state';
+  btnOn.className  = 'btn-on'  + (isOn ? ' aktif' : '');
+  btnOff.className = 'btn-off' + (isOn ? '' : ' aktif');
 }
 
-// ═══════════════════════════════════════════════════════════
-// SD CARD STATUS
-// ═══════════════════════════════════════════════════════════
-function updateSDCard(raw) {
-  const card = document.getElementById('sdCard');
-  const vSD  = document.getElementById('vSD');
-  const bSD  = document.getElementById('bSD');
-  const trSD = document.getElementById('trSD');
-
-  const val = String(raw).trim().toUpperCase();
-  const isOk  = ['AKTIF', 'ACTIVE', 'OK', '1', 'TRUE', 'READY', 'MOUNTED'].includes(val);
-  const isErr = ['ERROR', 'GAGAL', 'FAIL', 'FAILED', '0', 'FALSE', 'UNMOUNTED', 'MISSING'].includes(val);
-
-  card.classList.remove('sd-error', 'sd-warn');
-
-  if (isOk) {
-    vSD.textContent = '💾 AKTIF';
-    bSD.style.width = '100%';
-    trSD.innerHTML  = `<span style="color:var(--g6)">✓ SD Card terpasang & siap</span>`;
-  } else if (isErr) {
-    card.classList.add('sd-error');
-    vSD.textContent = '🚨 ERROR';
-    bSD.style.width = '100%';
-    trSD.innerHTML  = `<span style="color:var(--red)">✗ SD Card gagal / tidak terbaca</span>`;
-    addLog('alert', '💾 SD Card: ERROR — periksa modul SD Card!', nowStr());
-  } else {
-    card.classList.add('sd-warn');
-    vSD.textContent = `⚠ ${val}`;
-    bSD.style.width = '60%';
-    trSD.innerHTML  = `<span style="color:var(--amber)">Status tidak dikenal: ${raw}</span>`;
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// SISTEM STATUS & HEALTH SCORE
-// ═══════════════════════════════════════════════════════════
-function systemStatus(t, h, s) {
+// ═══════════════════════════════════════════════════════════════
+// RENDER HISTORI
+// ═══════════════════════════════════════════════════════════════
+function sysStatus(t, h, s) {
   if (s < 20) return 'KRITIS';
   if (t > 35 || s < 40) return 'WASPADA';
   if (t > 25) return 'HANGAT';
   return 'NORMAL';
 }
 
-function statusBadge(stat) {
-  const map = {
-    NORMAL:  '<span class="badge bn">✓ NORMAL</span>',
-    HANGAT:  '<span class="badge bw">🌡 HANGAT</span>',
-    WASPADA: '<span class="badge bw">⚠ WASPADA</span>',
-    KRITIS:  '<span class="badge bd">🚨 KRITIS</span>',
-  };
-  return map[stat] || map.NORMAL;
+function bdg(s) {
+  const m = { NORMAL: 'bn', HANGAT: 'bw', WASPADA: 'bw', KRITIS: 'bd' };
+  const l = { NORMAL: '✓', HANGAT: '🌡', WASPADA: '⚠', KRITIS: '🚨' };
+  return `<span class="bdg ${m[s]||'bn'}">${l[s]||''} ${s}</span>`;
 }
 
-// ═══════════════════════════════════════════════════════════
-// RENDER FUNGSI
-// ═══════════════════════════════════════════════════════════
-function renderHistory() {
-  document.getElementById('hbody').innerHTML = [...history].reverse().slice(0, 40).map(r => `
-    <tr>
-      <td>${r.time}</td>
-      <td style="color:var(--amber)">${r.temp}°C</td>
-      <td style="color:var(--blue)">${r.hum}%</td>
-      <td style="color:var(--g6)">${r.soil}%</td>
-      <td style="color:${r.pump?'var(--blue)':'var(--dim)'}">${r.pump?'ON':'—'}</td>
-      <td style="color:${r.fan ?'var(--blue)':'var(--dim)'}">${r.fan ?'ON':'—'}</td>
-      <td style="color:${r.pelt?'var(--blue)':'var(--dim)'}">${r.pelt?'ON':'—'}</td>
-      <td style="color:${r.nutr?'var(--violet)':'var(--dim)'}">${r.nutr?'ON':'—'}</td>
-      <td>${statusBadge(r.status)}</td>
-    </tr>`).join('');
+function on(v) { return `<span style="color:${v?'var(--blue)':'var(--dim)'}">${v?'ON':'—'}</span>`; }
+
+function renderHistori() {
+  document.getElementById('hbody').innerHTML =
+    [...histori].reverse().slice(0, 40).map(r => `
+      <tr>
+        <td>${r.time}</td>
+        <td style="color:var(--amber)">${r.temp}°C</td>
+        <td style="color:var(--blue)">${r.hum}%</td>
+        <td style="color:var(--g6)">${r.soil}%</td>
+        <td>${on(r.pelt)}</td>
+        <td>${on(r.fan)}</td>
+        <td>${on(r.pump)}</td>
+        <td><span style="color:${r.nutr?'var(--violet)':'var(--dim)'}">${r.nutr?'ON':'—'}</span></td>
+        <td>${bdg(r.status)}</td>
+      </tr>`).join('');
 }
 
-function renderSummary(temp, hum, soil) {
-  const items = [
-    { lbl: '💧 Water Pump',   id: 'pump', on: actuators.pump.on },
-    { lbl: '🧪 Nutri Pump',   id: 'nutr', on: actuators.nutr.on },
-    { lbl: '🌀 Fan',          id: 'fan',  on: actuators.fan.on  },
-    { lbl: '❄️ Peltier',     id: 'pelt', on: actuators.pelt.on },
-  ];
-  document.getElementById('sumlist').innerHTML = items.map(item => `
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <span style="font-size:.73rem;color:var(--muted)">${item.lbl}</span>
-      <span style="font-size:.68rem;font-family:'Space Mono',monospace;padding:2px 9px;border-radius:99px;
-        background:${item.on?'rgba(82,196,122,.12)':'rgba(255,255,255,.05)'};
-        color:${item.on?'var(--g6)':'var(--dim)'}">${item.on?'ON':'OFF'}</span>
-    </div>`).join('');
-
-  // Health score: mulai 100, kurangi per kondisi buruk
-  let score = 100;
-  if (soil < 20)  score -= 30;
-  else if (soil < 40) score -= 15;
-  if (temp > 35)  score -= 20;
-  else if (temp > 30) score -= 10;
-  if (hum < 30 || hum > 85) score -= 10;
-  document.getElementById('hsc').textContent = Math.max(10, score);
-}
-
-// ═══════════════════════════════════════════════════════════
-// ACTIVITY LOG
-// ═══════════════════════════════════════════════════════════
-const LOG_ICONS = { on: '🟢', off: '⭕', warn: '⚠️', info: '📡', alert: '🚨' };
+// ═══════════════════════════════════════════════════════════════
+// LOG AKTIVITAS
+// ═══════════════════════════════════════════════════════════════
+const ICO = { on: '🟢', off: '⭕', warn: '⚠️', info: '📡', alert: '🚨' };
 
 function addLog(type, msg, time) {
-  activityLogs.unshift({ type, msg, time });
-  if (activityLogs.length > 50) activityLogs.pop();
+  logs.unshift({ type, msg, time });
+  if (logs.length > 50) logs.pop();
 
-  document.getElementById('lbody').innerHTML = activityLogs.slice(0, 20).map((l, i) => `
-    <div class="logi" style="animation-delay:${i * .025}s">
-      <div class="liico">${LOG_ICONS[l.type] || '📌'}</div>
-      <div><div class="limsg">${l.msg}</div><div class="litm">${l.time}</div></div>
-    </div>`).join('');
+  document.getElementById('lbody').innerHTML =
+    logs.slice(0, 18).map((l, i) => `
+      <div class="logi" style="animation-delay:${i * .02}s">
+        <div class="liico">${ICO[l.type] || '📌'}</div>
+        <div><div class="limsg">${l.msg}</div><div class="litm">${l.time}</div></div>
+      </div>`).join('');
 
-  document.getElementById('lcnt').textContent = `${activityLogs.length} logs`;
+  document.getElementById('lcnt').textContent = `${logs.length} log`;
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // EXPORT CSV
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 function expCSV() {
-  const rows = [['Waktu', 'Suhu', 'Hum Udara', 'Tanah', 'Water Pump', 'Fan', 'Peltier', 'Nutrisi', 'Status']];
-  history.forEach(r => rows.push([
+  const rows = [['Waktu','Suhu','Hum','Tanah','Peltier','Fan','PompaAir','Nutrisi','Status']];
+  histori.forEach(r => rows.push([
     r.time, r.temp, r.hum, r.soil,
-    r.pump?'ON':'OFF', r.fan?'ON':'OFF', r.pelt?'ON':'OFF', r.nutr?'ON':'OFF', r.status
+    r.pelt?'ON':'OFF', r.fan?'ON':'OFF', r.pump?'ON':'OFF', r.nutr?'ON':'OFF', r.status
   ]));
-  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = `greenhouse_${Date.now()}.csv`; a.click();
-  URL.revokeObjectURL(url);
+  const b = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+  const u = URL.createObjectURL(b);
+  const a = document.createElement('a');
+  a.href = u; a.download = `greenhouse_${Date.now()}.csv`; a.click();
+  URL.revokeObjectURL(u);
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // UTILITY
-// ═══════════════════════════════════════════════════════════
-function nowStr() {
-  return new Date().toLocaleTimeString('id-ID');
-}
+// ═══════════════════════════════════════════════════════════════
+function nowStr() { return new Date().toLocaleTimeString('id-ID'); }
 
-// ═══════════════════════════════════════════════════════════
-// INISIALISASI & FIREBASE LISTENER
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// INIT & FIREBASE LISTENER
+// ═══════════════════════════════════════════════════════════════
 addLog('info', '🌿 Dashboard dimuat. Menghubungkan ke Firebase…', nowStr());
-renderHistory();
+renderHistori();
 
 // Listener utama — /Monitoring (semua data dari ESP32)
 db.ref('/Monitoring').on('value',
@@ -926,25 +836,26 @@ db.ref('/Monitoring').on('value',
     const data = snapshot.val();
 
     if (!data) {
-      addLog('warn', '⚠ /Monitoring kosong atau belum ada data dari ESP32.', nowStr());
+      addLog('warn', '⚠ /Monitoring kosong. ESP32 belum kirim data.', nowStr());
       return;
     }
 
-    // Log sekali saat pertama kali terima data
-    if (!firstDataReceived) {
-      firstDataReceived = true;
-      document.getElementById('fbConnTxt').textContent = 'Connected ✓';
-      addLog('info', '✅ Firebase terhubung! Data sensor diterima dari ESP32.', nowStr());
+    // Log koneksi berhasil hanya sekali
+    if (!sudahTerimaData) {
+      sudahTerimaData = true;
+      document.getElementById('fbTxt').textContent = 'Connected ✓';
+      document.getElementById('fbTxt').style.color = 'var(--g6)';
+      addLog('info', '✅ Firebase terhubung! Data ESP32 diterima.', nowStr());
     }
 
-    applyMonitoringData(data);
+    update(data);
   },
   function(error) {
-    addLog('alert', '🚨 Koneksi Firebase gagal: ' + error.message, nowStr());
+    addLog('alert', '🚨 Firebase error: ' + error.message, nowStr());
     document.getElementById('vSt').textContent = '🔴 OFFLINE';
     document.getElementById('upd').textContent = 'Koneksi gagal';
-    document.getElementById('fbConnTxt').textContent = 'Error!';
-    document.getElementById('fbConnTxt').style.color = 'var(--red)';
+    document.getElementById('fbTxt').textContent = 'Error!';
+    document.getElementById('fbTxt').style.color = 'var(--red)';
   }
 );
 </script>
