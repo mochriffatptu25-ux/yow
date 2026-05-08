@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Smart Greenhouse v3</title>
+<title>Smart Greenhouse v4</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.8.1/firebase-app-compat.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.8.1/firebase-database-compat.min.js"></script>
@@ -14,46 +14,47 @@
   --g2:#1d4a2e;--g3:#28693f;--g5:#52c47a;--g6:#7de8a0;--g7:#b0ffcc;
   --lime:#d4ff4e;--amber:#ffad3b;--red:#ff5252;--blue:#43d9f5;--violet:#b57bff;
   --txt:#dff5e8;--muted:#5d9471;--dim:#2a4d36;
-  --card:rgba(15,36,22,.75);--border:rgba(82,196,122,.13);--r:16px;
+  --card:rgba(15,36,22,.78);--border:rgba(82,196,122,.13);--r:16px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Syne',sans-serif;background:var(--bg0);color:var(--txt);min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;z-index:0;
   background:radial-gradient(ellipse 70% 55% at 5% 0%,rgba(40,105,63,.22) 0%,transparent 60%),
-    radial-gradient(ellipse 55% 45% at 95% 100%,rgba(82,196,122,.12) 0%,transparent 55%),
-    radial-gradient(ellipse 80% 80% at 50%50%,var(--bg1) 0%,var(--bg0) 100%);pointer-events:none}
+  radial-gradient(ellipse 55% 45% at 95% 100%,rgba(82,196,122,.12) 0%,transparent 55%),
+  radial-gradient(ellipse 80% 80% at 50% 50%,var(--bg1) 0%,var(--bg0) 100%);pointer-events:none}
 body::after{content:'';position:fixed;inset:0;z-index:0;
-  background-image:linear-gradient(rgba(82,196,122,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(82,196,122,.03) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(82,196,122,.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(82,196,122,.03) 1px,transparent 1px);
   background-size:48px 48px;pointer-events:none}
-.wrap{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:0 20px 60px}
+.wrap{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:0 20px 60px}
 
 /* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;padding:22px 0 24px;
-  border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap;gap:10px}
-.brand{display:flex;align-items:center;gap:12px}
-.bico{width:46px;height:46px;background:linear-gradient(135deg,var(--g3),var(--g6));border-radius:13px;
-  display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 0 24px rgba(82,196,122,.3)}
-.brand h1{font-size:1.25rem;font-weight:800;color:var(--g7);letter-spacing:-1px;line-height:1.1}
-.brand p{font-size:.68rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace}
-.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.hbadge{display:flex;align-items:center;gap:6px;border:1px solid rgba(82,196,122,.22);border-radius:99px;
-  padding:5px 14px;font-size:.72rem;font-family:'Space Mono',monospace}
-.dot{width:7px;height:7px;border-radius:50%;animation:pulse 2s infinite}
+  border-bottom:1px solid var(--border);margin-bottom:22px;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:13px}
+.bico{width:48px;height:48px;background:linear-gradient(135deg,var(--g3),var(--g6));border-radius:14px;
+  display:flex;align-items:center;justify-content:center;font-size:25px;box-shadow:0 0 28px rgba(82,196,122,.3);flex-shrink:0}
+.brand h1{font-size:1.3rem;font-weight:800;color:var(--g7);letter-spacing:-1px;line-height:1.1}
+.brand p{font-size:.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Space Mono',monospace}
+.hdr-r{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.hbdg{display:flex;align-items:center;gap:6px;border:1px solid rgba(82,196,122,.2);border-radius:99px;
+  padding:5px 13px;font-size:.7rem;font-family:'Space Mono',monospace;color:var(--g6);background:rgba(82,196,122,.08)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--g6);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(82,196,122,.5)}50%{box-shadow:0 0 0 5px rgba(82,196,122,0)}}
-#upd{font-size:.7rem;color:var(--muted);font-family:'Space Mono',monospace}
+#upd{font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace}
 
 /* SENSOR CARDS */
 .sr{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
 .sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-  padding:18px 16px 14px;backdrop-filter:blur(12px);position:relative;overflow:hidden;transition:transform .2s}
-.sc:hover{transform:translateY(-2px)}
-.sc .bg{position:absolute;right:10px;top:8px;font-size:48px;opacity:.05;pointer-events:none}
-.slbl{font-size:.63rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:7px;font-weight:600}
+  padding:18px 15px 14px;backdrop-filter:blur(14px);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.sc:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(0,0,0,.3)}
+.sc .bg{position:absolute;right:10px;top:8px;font-size:46px;opacity:.05;pointer-events:none}
+.slbl{font-size:.62rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:7px;font-weight:600}
 .sval{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;line-height:1;margin-bottom:5px}
-.cu{font-size:.8rem;color:var(--muted);font-weight:400}
+.cu{font-size:.78rem;color:var(--muted);font-weight:400}
 .sbar{width:100%;height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-top:7px}
 .sbf{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.str{font-size:.68rem;color:var(--muted);margin-top:5px}
+.str{font-size:.67rem;color:var(--muted);margin-top:5px}
 .ct{color:var(--amber)}.ct .sbf{background:linear-gradient(90deg,#f07b1d,var(--amber))}
 .ch{color:var(--blue)}.ch .sbf{background:linear-gradient(90deg,#1db8d6,var(--blue))}
 .cs{color:var(--g6)}.cs .sbf{background:linear-gradient(90deg,var(--g3),var(--g6))}
@@ -61,155 +62,152 @@ header{display:flex;align-items:center;justify-content:space-between;padding:22p
 .csd .sval{font-size:.9rem;color:var(--muted)}
 
 /* CHARTS */
-.chrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(12px);overflow:hidden}
-.ph{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 11px;border-bottom:1px solid var(--border)}
-.pt{font-size:.78rem;font-weight:700;color:var(--g7);display:flex;align-items:center;gap:7px;font-family:'Space Mono',monospace}
+.chrow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:blur(14px);overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:13px 17px 10px;border-bottom:1px solid var(--border)}
+.pt{font-size:.76rem;font-weight:700;color:var(--g7);display:flex;align-items:center;gap:7px;font-family:'Space Mono',monospace}
 .pt i{width:6px;height:6px;border-radius:50%;background:var(--g5);display:inline-block}
 .ctabs{display:flex;gap:3px}
-.ctb{padding:4px 11px;border-radius:7px;font-size:.65rem;font-weight:700;cursor:pointer;
+.ctb{padding:4px 10px;border-radius:7px;font-size:.63rem;font-weight:700;cursor:pointer;
   border:none;background:transparent;color:var(--muted);transition:all .2s;font-family:'Syne',sans-serif}
 .ctb.act{background:var(--g2);color:var(--g7)}
-.cbox{padding:14px 16px;height:220px}
+.cbox{padding:13px 15px;height:210px}
 
-/* ACTUATOR GRID */
-.asec{margin-bottom:16px}
+/* AKTUATOR */
+.asec{margin-bottom:14px}
 .asec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
-.asec-hd h2{font-size:.95rem;font-weight:800;color:var(--g7);display:flex;align-items:center;gap:9px}
-.asec-hd h2::before{content:'';width:4px;height:18px;background:linear-gradient(var(--g5),var(--lime));border-radius:2px;display:block}
+.asec-hd h2{font-size:.93rem;font-weight:800;color:var(--g7);display:flex;align-items:center;gap:9px}
+.asec-hd h2::before{content:'';width:3px;height:18px;background:linear-gradient(var(--g5),var(--lime));border-radius:2px;display:block}
 .agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 
 .acard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-  padding:18px 16px;backdrop-filter:blur(12px);transition:all .25s}
-.acard.on{border-color:rgba(82,196,122,.4);background:rgba(15,50,28,.85);box-shadow:0 0 28px rgba(82,196,122,.12)}
-.acard.cool.on{border-color:rgba(67,217,245,.4);background:rgba(5,25,40,.85);box-shadow:0 0 28px rgba(67,217,245,.12)}
-.acard.warn.on{border-color:rgba(255,173,59,.4);background:rgba(40,25,5,.85);box-shadow:0 0 28px rgba(255,173,59,.12)}
-.acard.nutr.on{border-color:rgba(181,123,255,.4);background:rgba(20,5,40,.85);box-shadow:0 0 28px rgba(181,123,255,.12)}
+  padding:17px 15px;backdrop-filter:blur(14px);transition:all .25s}
+.acard.on     {border-color:rgba(82,196,122,.4);background:rgba(15,50,28,.88);box-shadow:0 0 28px rgba(82,196,122,.12)}
+.acard.cool.on{border-color:rgba(67,217,245,.4);background:rgba(5,25,40,.88);box-shadow:0 0 28px rgba(67,217,245,.12)}
+.acard.warn.on{border-color:rgba(255,173,59,.4);background:rgba(40,25,5,.88);box-shadow:0 0 28px rgba(255,173,59,.12)}
+.acard.nutr.on{border-color:rgba(181,123,255,.4);background:rgba(20,5,40,.88);box-shadow:0 0 28px rgba(181,123,255,.12)}
 
 .atop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-.aico{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
-  font-size:20px;background:rgba(255,255,255,.05);margin-bottom:6px;transition:all .3s}
-.acard.on .aico{background:rgba(82,196,122,.15);box-shadow:0 0 14px rgba(82,196,122,.25)}
+.aico{width:41px;height:41px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;background:rgba(255,255,255,.05);margin-bottom:6px;transition:all .3s}
+.acard.on     .aico{background:rgba(82,196,122,.15);box-shadow:0 0 14px rgba(82,196,122,.25)}
 .acard.cool.on .aico{background:rgba(67,217,245,.15);box-shadow:0 0 14px rgba(67,217,245,.25)}
 .acard.warn.on .aico{background:rgba(255,173,59,.15);box-shadow:0 0 14px rgba(255,173,59,.25)}
 .acard.nutr.on .aico{background:rgba(181,123,255,.15);box-shadow:0 0 14px rgba(181,123,255,.25)}
-.aname{font-size:.88rem;font-weight:700;color:var(--txt);margin-bottom:2px}
-.asub{font-size:.62rem;color:var(--muted)}
 
-.spill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;
-  font-size:.68rem;font-family:'Space Mono',monospace;font-weight:700;
+.aname{font-size:.86rem;font-weight:700;color:var(--txt);margin-bottom:2px}
+.asub{font-size:.61rem;color:var(--muted)}
+
+.spill{display:inline-flex;align-items:center;padding:4px 11px;border-radius:99px;
+  font-size:.66rem;font-family:'Space Mono',monospace;font-weight:700;
   border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:var(--dim);transition:all .4s}
-.acard.on .spill{background:rgba(82,196,122,.15);border-color:rgba(82,196,122,.35);color:var(--g6)}
+.acard.on     .spill{background:rgba(82,196,122,.15);border-color:rgba(82,196,122,.35);color:var(--g6)}
 .acard.cool.on .spill{background:rgba(67,217,245,.15);border-color:rgba(67,217,245,.35);color:var(--blue)}
 .acard.warn.on .spill{background:rgba(255,173,59,.15);border-color:rgba(255,173,59,.35);color:var(--amber)}
 .acard.nutr.on .spill{background:rgba(181,123,255,.15);border-color:rgba(181,123,255,.35);color:var(--violet)}
 
-.mbadge{display:inline-flex;align-items:center;font-size:.6rem;font-family:'Space Mono',monospace;
+.mbadge{display:inline-flex;align-items:center;font-size:.59rem;font-family:'Space Mono',monospace;
   padding:2px 8px;border-radius:5px;font-weight:700;margin-bottom:8px;transition:all .3s}
-.mba{background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)}
-.mmn{background:rgba(255,173,59,.1);color:var(--amber);border:1px solid rgba(255,173,59,.2)}
-.mmv{background:rgba(181,123,255,.1);color:var(--violet);border:1px solid rgba(181,123,255,.18)}
+.mba {background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)}
+.mmv {background:rgba(181,123,255,.1);color:var(--violet);border:1px solid rgba(181,123,255,.18)}
 
 .cbar{margin-top:8px}
-.clbl{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-bottom:3px;font-family:'Space Mono',monospace}
+.clbl{display:flex;justify-content:space-between;font-size:.61rem;color:var(--muted);margin-bottom:3px;font-family:'Space Mono',monospace}
 .ctrk{height:3px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
 .cfill{height:100%;border-radius:99px;transition:width 1s ease}
 .srow{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
-.astat{display:flex;align-items:center;gap:5px;font-size:.67rem;font-family:'Space Mono',monospace}
+.astat{display:flex;align-items:center;gap:5px;font-size:.66rem;font-family:'Space Mono',monospace}
 .adot{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:all .4s}
-.acard.on .adot{background:var(--g5);box-shadow:0 0 5px var(--g5)}
+.acard.on     .adot{background:var(--g5);box-shadow:0 0 5px var(--g5)}
 .acard.cool.on .adot{background:var(--blue);box-shadow:0 0 5px var(--blue)}
 .acard.warn.on .adot{background:var(--amber);box-shadow:0 0 5px var(--amber)}
 .acard.nutr.on .adot{background:var(--violet);box-shadow:0 0 5px var(--violet)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .acard.on .spn{display:inline-block;animation:spin .8s linear infinite}
-.hint{font-size:.58rem;color:var(--muted);font-family:'Space Mono',monospace}
+.hint{font-size:.57rem;color:var(--muted);font-family:'Space Mono',monospace}
 
-/* ── KONTROL POMPA AIR (3 tombol: AUTO / ON / OFF) ── */
-.ctrl-wrap{margin-top:11px;padding-top:11px;border-top:1px solid rgba(255,255,255,.06)}
-.ctrl-title{font-size:.62rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px}
+/* KONTROL TOMBOL */
+.ctrl-wrap{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}
+.ctrl-lbl{font-size:.6rem;color:var(--dim);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
 .pump-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px}
-.pbtn{padding:7px 0;border-radius:8px;font-family:'Syne',sans-serif;font-size:.72rem;
-  font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.04);color:var(--muted);transition:all .2s}
-.pbtn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.15)}
-.pbtn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.pbtn.auto.sel{background:rgba(212,255,78,.15);border-color:rgba(212,255,78,.4);color:var(--lime)}
-.pbtn.pon.sel {background:rgba(67,217,245,.15);border-color:rgba(67,217,245,.4);color:var(--blue)}
-.pbtn.poff.sel{background:rgba(255,82,82,.12); border-color:rgba(255,82,82,.38);color:var(--red)}
-
-/* ── KONTROL POMPA NUTRISI (2 tombol: ON / OFF) ── */
 .nutr-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px}
-.nbtn{padding:7px 0;border-radius:8px;font-family:'Syne',sans-serif;font-size:.72rem;
+.pbtn,.nbtn{padding:8px 0;border-radius:8px;font-family:'Syne',sans-serif;font-size:.72rem;
   font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.04);color:var(--muted);transition:all .2s}
-.nbtn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.15)}
-.nbtn:disabled{opacity:.4;cursor:not-allowed}
+  background:rgba(255,255,255,.04);color:var(--muted);transition:all .18s}
+.pbtn:hover:not(:disabled),.nbtn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.2)}
+.pbtn:disabled,.nbtn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+/* Pompa Air states */
+.pbtn.auto.sel{background:rgba(212,255,78,.15);border-color:rgba(212,255,78,.45);color:var(--lime)}
+.pbtn.pon.sel {background:rgba(67,217,245,.15);border-color:rgba(67,217,245,.45);color:var(--blue)}
+.pbtn.poff.sel{background:rgba(255,82,82,.13); border-color:rgba(255,82,82,.42); color:var(--red)}
+/* Nutrisi states */
 .nbtn.non.sel {background:rgba(181,123,255,.2);border-color:rgba(181,123,255,.5);color:var(--violet)}
-.nbtn.noff.sel{background:rgba(255,82,82,.12);border-color:rgba(255,82,82,.38);color:var(--red)}
-
-.ctrl-hint{font-size:.58rem;color:var(--dim);font-family:'Space Mono',monospace;text-align:center;margin-bottom:4px}
-.ctrl-fb{font-size:.63rem;font-family:'Space Mono',monospace;padding:4px 8px;border-radius:6px;
+.nbtn.noff.sel{background:rgba(255,82,82,.13);border-color:rgba(255,82,82,.42);color:var(--red)}
+/* Feedback */
+.ctrl-hint{font-size:.57rem;color:var(--dim);font-family:'Space Mono',monospace;text-align:center;margin-bottom:4px}
+.ctrl-fb{font-size:.62rem;font-family:'Space Mono',monospace;padding:4px 8px;border-radius:6px;
   text-align:center;opacity:0;transition:opacity .3s;min-height:22px}
 .ctrl-fb.show{opacity:1}
 .ctrl-fb.ok  {background:rgba(82,196,122,.1);color:var(--g6);border:1px solid rgba(82,196,122,.2)}
 .ctrl-fb.err {background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)}
-.ctrl-fb.wait{background:rgba(67,217,245,.08);color:var(--blue);border:1px solid rgba(67,217,245,.18)}
-
-/* BOTTOM */
-.botrow{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-bottom:16px}
-.hbody,.lbody{overflow-y:auto;max-height:260px}
-.hbody{padding:0 18px 16px}
-.lbody{padding:12px 18px 16px}
-.hbody::-webkit-scrollbar,.lbody::-webkit-scrollbar{width:3px}
-.hbody::-webkit-scrollbar-thumb,.lbody::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
-table{width:100%;border-collapse:collapse}
-thead th{padding:8px 6px;text-align:left;font-size:.58rem;text-transform:uppercase;
-  letter-spacing:1.5px;color:var(--dim);font-weight:700;position:sticky;top:0;background:var(--bg1);z-index:1}
-tbody tr{border-top:1px solid rgba(82,196,122,.05);transition:background .15s}
-tbody tr:hover{background:rgba(82,196,122,.04)}
-tbody td{padding:7px 6px;font-family:'Space Mono',monospace;font-size:.64rem}
-.bdg{padding:2px 7px;border-radius:99px;font-size:.58rem;font-weight:700;display:inline-block}
-.bn{background:rgba(82,196,122,.12);color:var(--g6)}.bw{background:rgba(255,173,59,.12);color:var(--amber)}.bd{background:rgba(255,82,82,.12);color:var(--red)}
-.logi{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid rgba(82,196,122,.06);animation:sli .3s ease both}
-@keyframes sli{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:none}}
-.logi:last-child{border-bottom:none}
-.liico{font-size:1rem;flex-shrink:0;margin-top:1px}
-.limsg{font-size:.72rem;color:var(--txt);margin-bottom:1px}
-.litm{font-size:.59rem;color:var(--dim);font-family:'Space Mono',monospace}
+.ctrl-fb.wait{background:rgba(67,217,245,.07);color:var(--blue);border:1px solid rgba(67,217,245,.18)}
 
 /* SHEETS PANEL */
-.sheets-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-  backdrop-filter:blur(12px);overflow:hidden;margin-bottom:16px}
-.sh-body{padding:18px 20px}
-.sh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.sh-stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
-.sh-num{font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700;line-height:1}
-.sh-lbl{font-size:.6rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:1px}
+.sh-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  backdrop-filter:blur(14px);overflow:hidden;margin-bottom:14px}
+.sh-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px}
 .sh-status{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;
-  background:rgba(255,255,255,.03);border:1px solid var(--border);font-size:.7rem;
-  font-family:'Space Mono',monospace;color:var(--muted);transition:all .3s;margin-bottom:12px}
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  font-size:.68rem;font-family:'Space Mono',monospace;color:var(--muted);transition:all .3s}
 .sh-status.ok  {background:rgba(82,196,122,.08);border-color:rgba(82,196,122,.25);color:var(--g6)}
 .sh-status.err {background:rgba(255,82,82,.08); border-color:rgba(255,82,82,.25); color:var(--red)}
 .sh-status.wait{background:rgba(67,217,245,.06);border-color:rgba(67,217,245,.2); color:var(--blue)}
-.sh-log-list{max-height:140px;overflow-y:auto}
-.sh-log-list::-webkit-scrollbar{width:3px}
-.sh-log-list::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
-.sh-log-item{display:flex;align-items:center;gap:8px;padding:7px 0;
-  border-bottom:1px solid rgba(82,196,122,.05);font-size:.68rem}
-.sh-log-item:last-child{border-bottom:none}
+.sh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sh-stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.sh-num{font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700;line-height:1}
+.sh-lbl{font-size:.59rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.8px}
+.sh-log{max-height:130px;overflow-y:auto}
+.sh-log::-webkit-scrollbar{width:3px}
+.sh-log::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
+.sh-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(82,196,122,.05);font-size:.67rem}
+.sh-item:last-child{border-bottom:none}
 .sh-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .sh-dot.ok{background:var(--g5)}.sh-dot.err{background:var(--red)}
 .sh-val{font-family:'Space Mono',monospace;color:var(--txt);flex:1}
-.sh-time{font-size:.59rem;color:var(--dim);font-family:'Space Mono',monospace;flex-shrink:0}
+.sh-time{font-size:.58rem;color:var(--dim);font-family:'Space Mono',monospace;flex-shrink:0}
 
-footer{border-top:1px solid var(--border);padding:16px 0;
-  display:flex;justify-content:space-between;margin-top:24px;flex-wrap:wrap;gap:6px}
-footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
+/* BOTTOM */
+.botrow{display:grid;grid-template-columns:1fr 350px;gap:14px}
+.hbody{padding:0 17px 15px;max-height:260px;overflow-y:auto}
+.lbody{padding:11px 17px 15px;max-height:260px;overflow-y:auto}
+.hbody::-webkit-scrollbar,.lbody::-webkit-scrollbar{width:3px}
+.hbody::-webkit-scrollbar-thumb,.lbody::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
+table{width:100%;border-collapse:collapse}
+thead th{padding:7px 6px;text-align:left;font-size:.57rem;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--dim);font-weight:700;position:sticky;top:0;background:var(--bg1);z-index:1}
+tbody tr{border-top:1px solid rgba(82,196,122,.05)}
+tbody tr:hover{background:rgba(82,196,122,.04)}
+tbody td{padding:7px 6px;font-family:'Space Mono',monospace;font-size:.63rem}
+.bdg{padding:2px 7px;border-radius:99px;font-size:.57rem;font-weight:700;display:inline-block}
+.bn{background:rgba(82,196,122,.12);color:var(--g6)}
+.bw{background:rgba(255,173,59,.12);color:var(--amber)}
+.bd{background:rgba(255,82,82,.12);color:var(--red)}
+.logi{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid rgba(82,196,122,.06);animation:sli .3s ease both}
+@keyframes sli{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:none}}
+.logi:last-child{border-bottom:none}
+.liico{font-size:.95rem;flex-shrink:0;margin-top:1px}
+.limsg{font-size:.7rem;color:var(--txt);margin-bottom:1px}
+.litm{font-size:.58rem;color:var(--dim);font-family:'Space Mono',monospace}
+
+footer{border-top:1px solid var(--border);padding:16px 0;display:flex;
+  justify-content:space-between;margin-top:22px;flex-wrap:wrap;gap:6px}
+footer div{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
 
 .fu{opacity:0;transform:translateY(14px);animation:fu .4s ease forwards}
 @keyframes fu{to{opacity:1;transform:none}}
-.d1{animation-delay:.06s}.d2{animation-delay:.12s}.d3{animation-delay:.18s}.d4{animation-delay:.24s}.d5{animation-delay:.30s}
+.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}
+.d4{animation-delay:.2s}.d5{animation-delay:.25s}.d6{animation-delay:.3s}
+
 @media(max-width:1100px){.agrid{grid-template-columns:repeat(2,1fr)}.botrow{grid-template-columns:1fr}}
 @media(max-width:760px){.sr{grid-template-columns:1fr 1fr}.chrow{grid-template-columns:1fr}}
 @media(max-width:480px){.sr{grid-template-columns:1fr}.agrid{grid-template-columns:1fr}}
@@ -224,15 +222,16 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
     <div class="bico">🌿</div>
     <div>
       <h1>Smart Greenhouse</h1>
-      <p>v3.0 · ESP32 · Firebase · Sheets · Manual+Auto</p>
+      <p>v4.0 · ESP32 · Firebase · Sheets · Manual+Auto</p>
     </div>
   </div>
   <div class="hdr-r">
-    <div class="hbadge" style="background:rgba(212,255,78,.08);border-color:rgba(212,255,78,.2);color:var(--lime)">
+    <div class="hbdg" style="background:rgba(212,255,78,.08);border-color:rgba(212,255,78,.2);color:var(--lime)">
       <div class="dot" style="background:var(--lime)"></div>LIVE
     </div>
-    <div class="hbadge" style="background:rgba(82,196,122,.08);color:var(--g6)">
-      <div class="dot" style="background:var(--g6)"></div>Firebase
+    <div class="hbdg">
+      <div class="dot"></div>
+      <span id="fb-status">Menghubungkan…</span>
     </div>
     <span id="upd">--:--:--</span>
   </div>
@@ -244,7 +243,7 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
     <div class="slbl">Suhu Udara</div>
     <div class="sval" id="vT">—<span class="cu"> °C</span></div>
     <div class="sbar"><div class="sbf" id="bT" style="width:0%"></div></div>
-    <div class="str" id="trT">Menunggu…</div>
+    <div class="str" id="trT">Menunggu data…</div>
   </div>
   <div class="sc ch"><div class="bg">💧</div>
     <div class="slbl">Kelembaban Udara</div>
@@ -256,13 +255,13 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
     <div class="slbl">Kelembaban Tanah</div>
     <div class="sval" id="vS">—<span class="cu"> %</span></div>
     <div class="sbar"><div class="sbf" id="bS" style="width:0%"></div></div>
-    <div class="str" id="trS">Menunggu…</div>
+    <div class="str" id="trS">Menunggu data…</div>
   </div>
   <div class="sc cx"><div class="bg">📡</div>
     <div class="slbl">Status Sistem</div>
-    <div class="sval" id="vSt" style="font-size:1rem;line-height:1.3">⏳ Menunggu…</div>
+    <div class="sval" id="vSt" style="font-size:.95rem;line-height:1.35">⏳ Menunggu…</div>
     <div class="sbar"><div class="sbf" id="bSt" style="width:100%;background:var(--dim)"></div></div>
-    <div class="str">FB: <span id="fbTxt" style="color:var(--muted)">Menghubungkan…</span></div>
+    <div class="str">Firebase: <span id="fbTxt" style="color:var(--muted)">Menghubungkan…</span></div>
   </div>
   <div class="sc csd"><div class="bg">💾</div>
     <div class="slbl">SD Card</div>
@@ -300,9 +299,9 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
 <div class="asec fu d3">
   <div class="asec-hd">
     <h2>Status Aktuator</h2>
-    <span style="font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace;
+    <span style="font-size:.63rem;color:var(--muted);font-family:'Space Mono',monospace;
       background:rgba(82,196,122,.06);border:1px solid var(--border);border-radius:7px;padding:3px 10px">
-      Peltier & Fan = Auto · Pompa Air & Nutrisi = Manual + Auto
+      Peltier & Fan = Full Auto · Pompa Air = Auto+Manual · Nutrisi = Manual
     </span>
   </div>
   <div class="agrid">
@@ -341,7 +340,7 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
       </div>
     </div>
 
-    <!-- POMPA AIR — MANUAL + AUTO -->
+    <!-- POMPA AIR — AUTO + MANUAL -->
     <div class="acard warn" id="ac-pump">
       <div class="atop">
         <div><div class="aico">💧</div><div class="aname">Pompa Air</div><div class="asub">GPIO 16 · 5V</div></div>
@@ -356,23 +355,22 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
         <div class="astat"><div class="adot"></div><span id="as-pump">STANDBY</span></div>
         <span class="hint" id="hint-pump">ON jika &lt;40%</span>
       </div>
-      <!-- 3 TOMBOL KONTROL POMPA AIR -->
       <div class="ctrl-wrap">
-        <div class="ctrl-title">⚡ Override Pompa Air</div>
+        <div class="ctrl-lbl">Override Pompa Air</div>
         <div class="pump-btns">
           <button class="pbtn auto sel" id="pb-auto" onclick="setPompaAir(-1)">⚙ AUTO</button>
-          <button class="pbtn pon"      id="pb-on"   onclick="setPompaAir(1)">▶ ON</button>
-          <button class="pbtn poff"     id="pb-off"  onclick="setPompaAir(0)">■ OFF</button>
+          <button class="pbtn pon"      id="pb-on"   onclick="setPompaAir(1)" >▶ ON</button>
+          <button class="pbtn poff"     id="pb-off"  onclick="setPompaAir(0)" >■ OFF</button>
         </div>
         <div class="ctrl-hint">/Control/PompaAir → ESP32 GPIO16</div>
         <div class="ctrl-fb" id="fb-pump"></div>
       </div>
     </div>
 
-    <!-- POMPA NUTRISI -->
+    <!-- POMPA NUTRISI — MANUAL -->
     <div class="acard nutr" id="ac-nutr">
       <div class="atop">
-        <div><div class="aico">🧪</div><div class="aname">Pompa Nutrisi</div><div class="asub">GPIO 27 · 5V</div></div>
+        <div><div class="aico">🧪</div><div class="aname">Pompa Nutrisi</div><div class="asub">GPIO 27 · 5V · Manual</div></div>
         <div class="spill" id="sp-nutr">⭕ OFF</div>
       </div>
       <div class="mbadge mmv">🖥 MANUAL</div>
@@ -384,12 +382,11 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
         <div class="astat"><div class="adot"></div><span id="as-nutr">STANDBY</span></div>
         <span class="hint">Dikonfirmasi ESP32</span>
       </div>
-      <!-- 2 TOMBOL KONTROL POMPA NUTRISI -->
       <div class="ctrl-wrap" style="border-top-color:rgba(181,123,255,.15)">
-        <div class="ctrl-title">⚡ Kontrol Nutrisi</div>
+        <div class="ctrl-lbl">Kontrol Pompa Nutrisi</div>
         <div class="nutr-btns">
-          <button class="nbtn non"  id="nb-on"  onclick="setPompaNutrisi(1)">▶ ON</button>
-          <button class="nbtn noff sel" id="nb-off" onclick="setPompaNutrisi(0)">■ OFF</button>
+          <button class="nbtn non"      id="nb-on"  onclick="setNutrisi(1)">▶ ON</button>
+          <button class="nbtn noff sel" id="nb-off" onclick="setNutrisi(0)">■ OFF</button>
         </div>
         <div class="ctrl-hint">/Control/PompaNutrisi → ESP32 GPIO27</div>
         <div class="ctrl-fb" id="fb-nutr"></div>
@@ -400,14 +397,14 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
 </div>
 
 <!-- GOOGLE SHEETS PANEL -->
-<div class="sheets-panel fu d4">
+<div class="sh-panel fu d4">
   <div class="ph">
     <div class="pt"><i></i>📊 Data Logging · Google Sheets</div>
     <a href="https://script.google.com/macros/s/AKfycbx-1Oyl1GhkTBDz7AGsfqMmurSy_rkq1YLpcjKwymizLeBOWQnVfRLYIRvh4vJeWJ7n/exec"
        target="_blank"
-       style="display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:9px;
+       style="display:flex;align-items:center;gap:7px;padding:6px 13px;border-radius:9px;
          border:1px solid rgba(82,196,122,.22);background:rgba(82,196,122,.07);color:var(--g6);
-         font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;text-decoration:none;transition:all .2s"
+         font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;text-decoration:none;transition:all .2s"
        onmouseover="this.style.background='rgba(82,196,122,.15)'"
        onmouseout="this.style.background='rgba(82,196,122,.07)'">
       🔗 Buka Spreadsheet
@@ -416,18 +413,20 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
   <div class="sh-body">
     <div class="sh-status" id="sh-status">
       <span id="sh-ico">⏳</span>
-      <span id="sh-msg">Menunggu data dari Firebase…</span>
+      <span id="sh-msg">Menunggu data dari ESP32…</span>
     </div>
     <div class="sh-stats">
       <div class="sh-stat"><div class="sh-num" id="sh-total" style="color:var(--lime)">0</div><div class="sh-lbl">Total Log</div></div>
       <div class="sh-stat"><div class="sh-num" id="sh-ok"    style="color:var(--g6)">0</div><div class="sh-lbl">Berhasil</div></div>
       <div class="sh-stat"><div class="sh-num" id="sh-fail"  style="color:var(--red)">0</div><div class="sh-lbl">Gagal</div></div>
     </div>
-    <div style="font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px">
-      Riwayat Pengiriman (otomatis setiap 10 detik via ESP32)
-    </div>
-    <div class="sh-log-list" id="sh-log-list">
-      <div style="font-size:.68rem;color:var(--dim);font-family:'Space Mono',monospace;padding:6px 0">Belum ada data…</div>
+    <div>
+      <div style="font-size:.62rem;color:var(--dim);font-family:'Space Mono',monospace;margin-bottom:7px;text-transform:uppercase;letter-spacing:.8px">
+        Riwayat Pengiriman — Data dikirim ESP32 tiap 10 detik
+      </div>
+      <div class="sh-log" id="sh-log">
+        <div style="font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace;padding:5px 0">Belum ada data…</div>
+      </div>
     </div>
   </div>
 </div>
@@ -438,7 +437,7 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
     <div class="ph">
       <div class="pt"><i></i>Riwayat Data</div>
       <button onclick="expCSV()" style="background:rgba(82,196,122,.1);border:1px solid rgba(82,196,122,.2);
-        color:var(--g6);border-radius:7px;padding:4px 12px;font-size:.65rem;font-weight:700;
+        color:var(--g6);border-radius:7px;padding:4px 12px;font-size:.63rem;font-weight:700;
         cursor:pointer;font-family:'Syne',sans-serif">⬇ CSV</button>
     </div>
     <div class="hbody">
@@ -451,46 +450,61 @@ footer div{font-size:.65rem;color:var(--dim);font-family:'Space Mono',monospace}
   <div class="panel">
     <div class="ph">
       <div class="pt"><i></i>Log Aktivitas</div>
-      <span style="font-size:.62rem;color:var(--muted);font-family:'Space Mono',monospace" id="lcnt">0 log</span>
+      <span style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace" id="lcnt">0 log</span>
     </div>
     <div class="lbody" id="lbody"></div>
   </div>
 </div>
 
 <footer>
-  <div>SMART GREENHOUSE v3.0 · ESP32 · DHT22 · Soil · 4 Relay · GPIO16 PompaAir</div>
-  <div>Firebase · Google Sheets · Boot Protection Fix · © 2025</div>
+  <div>SMART GREENHOUSE v4.0 · ESP32 · DHT22 · Soil · 4 Relay · GPIO16=PompaAir · Boot Fix</div>
+  <div>Firebase Realtime DB · Google Sheets · Manual+Auto Control · © 2025</div>
 </footer>
 </div>
 
 <script>
 'use strict';
 
-// Firebase config
-const FB = {
-  apiKey:"AIzaSyDq4cyOjlMICrkoHus1ZW5nTH-KEobSEs0",
-  authDomain:"projek-3-97a68.firebaseapp.com",
-  databaseURL:"https://projek-3-97a68-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"projek-3-97a68",
-  appId:"1:981835425647:web:d06b87fa4b9c8a6bf36a9a"
+// ══════════════════════════════════════════════
+// FIREBASE CONFIG
+// ══════════════════════════════════════════════
+const FB_CFG = {
+  apiKey:      "AIzaSyDq4cyOjlMICrkoHus1ZW5nTH-KEobSEs0",
+  authDomain:  "projek-3-97a68.firebaseapp.com",
+  databaseURL: "https://projek-3-97a68-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:   "projek-3-97a68",
+  appId:       "1:981835425647:web:d06b87fa4b9c8a6bf36a9a"
 };
-if(typeof firebase==='undefined'){document.body.innerHTML='<p style="color:red;padding:2rem">Firebase SDK gagal. Refresh halaman.</p>';throw new Error('SDK');}
-firebase.initializeApp(FB);
-const db=firebase.database();
 
-// State
-const MAX=24,labels=[],dT=[],dH=[],dS=[],histori=[],logs=[];
-let prevT=null,firstData=false,pumpLocked=false,nutrLocked=false;
-let curPumpMode=-1; // -1=auto, 0=off, 1=on
-const act={pelt:false,fan:false,pump:false,nutr:false};
+if (typeof firebase === 'undefined') {
+  document.body.innerHTML = '<div style="position:fixed;inset:0;background:#060f0a;display:flex;align-items:center;justify-content:center;color:#ff5252;font-family:monospace;font-size:1rem;text-align:center;padding:2rem">🚨 Firebase SDK gagal dimuat.<br>Refresh halaman (Ctrl+Shift+R)<br>atau nonaktifkan ad-blocker.</div>';
+  throw new Error('Firebase SDK not loaded');
+}
+
+firebase.initializeApp(FB_CFG);
+const db = firebase.database();
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+const MAX = 24;
+const labels = [], dT = [], dH = [], dS = [];
+const histori = [], logs = [];
+let prevT = null, firstData = false;
+let pumpLock = false, nutrLock = false;
+let curPumpMode = -1; // -1=auto 0=off 1=on
 
 // Sheets stats
-let shTotal=0,shOk=0,shFail=0;
-const shLogs=[];
+let shTotal = 0, shOk = 0, shFail = 0;
+const shLogs = [];
 
-// Charts
-const baseOpt={
-  responsive:true,maintainAspectRatio:false,animation:{duration:500},
+const act = { pelt:false, fan:false, pump:false, nutr:false };
+
+// ══════════════════════════════════════════════
+// CHART SETUP
+// ══════════════════════════════════════════════
+const baseOpt = {
+  responsive:true, maintainAspectRatio:false, animation:{duration:500},
   plugins:{
     legend:{labels:{color:'#5d9471',font:{family:"'Space Mono',monospace",size:9},boxWidth:9,padding:10}},
     tooltip:{backgroundColor:'rgba(6,15,10,.94)',borderColor:'rgba(82,196,122,.22)',borderWidth:1,
@@ -502,263 +516,351 @@ const baseOpt={
     y:{ticks:{color:'#2a4d36',font:{family:"'Space Mono',monospace",size:8}},grid:{color:'rgba(82,196,122,.04)'}}
   }
 };
-const ds={
-  temp:[{label:'Suhu (°C)',data:dT,borderColor:'#ffad3b',backgroundColor:'rgba(255,173,59,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
+
+const ds = {
+  temp:[{label:'Suhu (°C)',  data:dT,borderColor:'#ffad3b',backgroundColor:'rgba(255,173,59,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
   hum: [{label:'Kelembaban (%)',data:dH,borderColor:'#43d9f5',backgroundColor:'rgba(67,217,245,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
-  all: [{label:'Suhu',data:dT,borderColor:'#ffad3b',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2},
-        {label:'Hum', data:dH,borderColor:'#43d9f5',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2}]
+  all: [
+    {label:'Suhu', data:dT,borderColor:'#ffad3b',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2},
+    {label:'Hum',  data:dH,borderColor:'#43d9f5',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2}
+  ]
 };
-const mainChart=new Chart(document.getElementById('mc').getContext('2d'),{type:'line',data:{labels,datasets:ds.temp},options:JSON.parse(JSON.stringify(baseOpt))});
-const soilOpt=JSON.parse(JSON.stringify(baseOpt));soilOpt.scales.y={...soilOpt.scales.y,min:0,max:100};
-const soilChart=new Chart(document.getElementById('sc').getContext('2d'),{
-  type:'line',data:{labels,datasets:[
-    {label:'Tanah (%)',data:dS,borderColor:'#52c47a',backgroundColor:'rgba(82,196,122,.1)',tension:.4,fill:true,pointRadius:0,borderWidth:2.5},
-    {label:'Batas (40%)',data:Array(MAX).fill(40),borderColor:'rgba(255,82,82,.5)',backgroundColor:'transparent',borderDash:[5,3],pointRadius:0,borderWidth:1.5}
-  ]},options:soilOpt
+
+const mainChart = new Chart(document.getElementById('mc').getContext('2d'), {
+  type:'line', data:{labels, datasets:ds.temp}, options:JSON.parse(JSON.stringify(baseOpt))
 });
-function swCh(m,btn){document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('act'));btn.classList.add('act');mainChart.data.datasets=ds[m];mainChart.update();}
 
-function parseStatus(raw){if(raw==null)return false;const s=String(raw).trim().toUpperCase();return s==='ON'||s==='1'||s==='TRUE';}
+const sOpt = JSON.parse(JSON.stringify(baseOpt));
+sOpt.scales.y = {...sOpt.scales.y, min:0, max:100};
+const soilChart = new Chart(document.getElementById('sc').getContext('2d'), {
+  type:'line',
+  data:{labels, datasets:[
+    {label:'Tanah (%)', data:dS,borderColor:'#52c47a',backgroundColor:'rgba(82,196,122,.1)',tension:.4,fill:true,pointRadius:0,borderWidth:2.5},
+    {label:'Batas (40%)', data:Array(MAX).fill(40),borderColor:'rgba(255,82,82,.5)',backgroundColor:'transparent',borderDash:[5,3],pointRadius:0,borderWidth:1.5}
+  ]},
+  options:sOpt
+});
 
-const NAMA={pelt:'❄️ Peltier',fan:'🌀 Fan',pump:'💧 Pompa Air',nutr:'🧪 Pompa Nutrisi'};
-function setAct(id,nyala){
-  const was=act[id];act[id]=nyala;
-  const card=document.getElementById('ac-'+id);if(!card)return;
-  nyala?card.classList.add('on'):card.classList.remove('on');
-  const pill=document.getElementById('sp-'+id);if(pill)pill.textContent=nyala?'🟢 ON':'⭕ OFF';
-  const stat=document.getElementById('as-'+id);if(stat)stat.textContent=nyala?'AKTIF':'STANDBY';
-  if(was!==nyala)addLog(nyala?'on':'off',`[ESP32] ${NAMA[id]} → ${nyala?'🟢 ON':'⭕ OFF'}`,nowStr());
+function swCh(m, btn) {
+  document.querySelectorAll('.ctb').forEach(b => b.classList.remove('act'));
+  btn.classList.add('act');
+  mainChart.data.datasets = ds[m];
+  mainChart.update();
 }
 
-// ══════════════════════════════════════════
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+function parseStatus(raw) {
+  if (raw == null) return false;
+  const s = String(raw).trim().toUpperCase();
+  return s === 'ON' || s === '1' || s === 'TRUE';
+}
+
+function nowStr() { return new Date().toLocaleTimeString('id-ID'); }
+
+const NAMA = { pelt:'❄️ Peltier', fan:'🌀 Fan', pump:'💧 Pompa Air', nutr:'🧪 Pompa Nutrisi' };
+
+function setAct(id, nyala) {
+  const was = act[id]; act[id] = nyala;
+  const card = document.getElementById('ac-' + id); if (!card) return;
+  nyala ? card.classList.add('on') : card.classList.remove('on');
+  const pill = document.getElementById('sp-' + id); if (pill) pill.textContent = nyala ? '🟢 ON' : '⭕ OFF';
+  const stat = document.getElementById('as-' + id); if (stat) stat.textContent = nyala ? 'AKTIF' : 'STANDBY';
+  if (was !== nyala) addLog(nyala ? 'on' : 'off', `[ESP32] ${NAMA[id]} → ${nyala ? '🟢 ON' : '⭕ OFF'}`, nowStr());
+}
+
+function showFb(el, type, msg) {
+  el.className = `ctrl-fb show ${type}`;
+  el.textContent = msg;
+  if (type !== 'wait') setTimeout(() => { el.className = 'ctrl-fb'; }, 4000);
+}
+
+// ══════════════════════════════════════════════
 // KONTROL POMPA AIR — -1=AUTO 0=OFF 1=ON
-// ══════════════════════════════════════════
-function setPompaAir(val){
-  if(pumpLocked)return;
-  pumpLocked=true;
-  const fb=document.getElementById('fb-pump');
-  const lbl={'-1':'AUTO','0':'MANUAL OFF','1':'MANUAL ON'};
-  showFb(fb,'wait',`📡 Set Pompa Air → ${lbl[String(val)]}…`);
-  addLog('info',`[WEB] Set PompaAir = ${val} (${lbl[String(val)]})`,nowStr());
+// ══════════════════════════════════════════════
+function setPompaAir(val) {
+  if (pumpLock) return;
+  pumpLock = true;
+  const fb = document.getElementById('fb-pump');
+  const lbl = {'-1':'AUTO', '0':'MANUAL OFF', '1':'MANUAL ON'};
+  showFb(fb, 'wait', `📡 Set Pompa Air → ${lbl[String(val)]}…`);
+  addLog('info', `[WEB] PompaAir = ${val} (${lbl[String(val)]})`, nowStr());
 
   db.ref('/Control/PompaAir').set(val)
-    .then(()=>{
-      curPumpMode=val;
+    .then(() => {
+      curPumpMode = val;
       updatePumpUI(val);
-      showFb(fb,'ok',`✅ Pompa Air → ${lbl[String(val)]}`);
+      showFb(fb, 'ok', `✅ Pompa Air → ${lbl[String(val)]}`);
+      addLog('on', `[WEB→FB] /Control/PompaAir = ${val} ✓`, nowStr());
     })
-    .catch(err=>showFb(fb,'err',`🚨 ${err.message}`))
-    .finally(()=>setTimeout(()=>{pumpLocked=false;},1500));
+    .catch(err => {
+      showFb(fb, 'err', `🚨 Gagal: ${err.message}`);
+      addLog('alert', `[WEB] Error PompaAir: ${err.message}`, nowStr());
+    })
+    .finally(() => setTimeout(() => { pumpLock = false; }, 1500));
 }
 
-function updatePumpUI(val){
-  document.getElementById('pb-auto').className='pbtn auto'+(val===-1?' sel':'');
-  document.getElementById('pb-on').className  ='pbtn pon' +(val=== 1?' sel':'');
-  document.getElementById('pb-off').className ='pbtn poff'+(val=== 0?' sel':'');
-  const badge=document.getElementById('badge-pump');
-  const hint =document.getElementById('hint-pump');
-  if(val===1){
-    badge.textContent='🖥 MANUAL ON';
-    badge.style.cssText='background:rgba(67,217,245,.1);color:var(--blue);border:1px solid rgba(67,217,245,.2)';
-    hint.textContent='Paksa ON dari web';
-  }else if(val===0){
-    badge.textContent='🖥 MANUAL OFF';
-    badge.style.cssText='background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)';
-    hint.textContent='Paksa OFF dari web';
-  }else{
-    badge.textContent='⚙ AUTO';
-    badge.style.cssText='background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)';
-    hint.textContent='ON jika <40%';
+function updatePumpUI(val) {
+  document.getElementById('pb-auto').className = 'pbtn auto' + (val === -1 ? ' sel' : '');
+  document.getElementById('pb-on').className   = 'pbtn pon'  + (val ===  1 ? ' sel' : '');
+  document.getElementById('pb-off').className  = 'pbtn poff' + (val ===  0 ? ' sel' : '');
+  const badge = document.getElementById('badge-pump');
+  const hint  = document.getElementById('hint-pump');
+  if (val === 1) {
+    badge.textContent = '🖥 MANUAL ON';
+    badge.style.cssText = 'background:rgba(67,217,245,.1);color:var(--blue);border:1px solid rgba(67,217,245,.2)';
+    hint.textContent = 'Paksa ON dari web';
+  } else if (val === 0) {
+    badge.textContent = '🖥 MANUAL OFF';
+    badge.style.cssText = 'background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)';
+    hint.textContent = 'Paksa OFF dari web';
+  } else {
+    badge.textContent = '⚙ AUTO';
+    badge.style.cssText = 'background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)';
+    hint.textContent = 'ON jika <40%';
   }
 }
 
-// ══════════════════════════════════════════
+// ══════════════════════════════════════════════
 // KONTROL POMPA NUTRISI
-// ══════════════════════════════════════════
-function setPompaNutrisi(val){
-  if(nutrLocked)return;
-  nutrLocked=true;
-  const fb=document.getElementById('fb-nutr');
-  showFb(fb,'wait',`📡 Nutrisi → ${val===1?'ON':'OFF'}…`);
+// ══════════════════════════════════════════════
+function setNutrisi(val) {
+  if (nutrLock) return;
+  nutrLock = true;
+  const fb = document.getElementById('fb-nutr');
+  showFb(fb, 'wait', `📡 Nutrisi → ${val === 1 ? 'ON' : 'OFF'}…`);
 
   db.ref('/Control/PompaNutrisi').set(val)
-    .then(()=>{
-      document.getElementById('nb-on').className ='nbtn non' +(val===1?' sel':'');
-      document.getElementById('nb-off').className='nbtn noff'+(val===0?' sel':'');
-      showFb(fb,'ok',`✅ Nutrisi ${val===1?'ON':'OFF'}`);
-      addLog('on',`[WEB→FB] PompaNutrisi = ${val} ✓`,nowStr());
+    .then(() => {
+      document.getElementById('nb-on').className  = 'nbtn non'  + (val === 1 ? ' sel' : '');
+      document.getElementById('nb-off').className = 'nbtn noff' + (val === 0 ? ' sel' : '');
+      showFb(fb, 'ok', `✅ Nutrisi ${val === 1 ? 'ON' : 'OFF'}`);
+      addLog('on', `[WEB→FB] PompaNutrisi = ${val} ✓`, nowStr());
     })
-    .catch(err=>showFb(fb,'err',`🚨 ${err.message}`))
-    .finally(()=>setTimeout(()=>{nutrLocked=false;},1500));
+    .catch(err => showFb(fb, 'err', `🚨 ${err.message}`))
+    .finally(() => setTimeout(() => { nutrLock = false; }, 1500));
 }
 
-function showFb(el,type,msg){
-  el.className=`ctrl-fb show ${type}`;el.textContent=msg;
-  if(type!=='wait')setTimeout(()=>{el.className='ctrl-fb';},4000);
+// ══════════════════════════════════════════════
+// SHEETS PANEL UPDATE
+// ══════════════════════════════════════════════
+function setShStatus(type, msg) {
+  const el = document.getElementById('sh-status');
+  const ico = { ok:'✅', err:'🚨', wait:'📡', '':'⏳' };
+  el.className = 'sh-status ' + (type || '');
+  document.getElementById('sh-ico').textContent = ico[type] || '⏳';
+  document.getElementById('sh-msg').textContent = msg;
 }
 
-// ══════════════════════════════════════════
-// SHEETS STATUS PANEL
-// ══════════════════════════════════════════
-function setShStatus(type,msg){
-  const el=document.getElementById('sh-status');
-  const ico={ok:'✅',err:'🚨',wait:'📡','':'⏳'};
-  el.className='sh-status '+(type||'');
-  document.getElementById('sh-ico').textContent=ico[type]||'⏳';
-  document.getElementById('sh-msg').textContent=msg;
-}
-
-function addShLog(ok,temp,hum,soil,time){
-  shTotal++;if(ok)shOk++;else shFail++;
-  document.getElementById('sh-total').textContent=shTotal;
-  document.getElementById('sh-ok').textContent=shOk;
-  document.getElementById('sh-fail').textContent=shFail;
-  shLogs.unshift({ok,temp,hum,soil,time});
-  if(shLogs.length>20)shLogs.pop();
-  document.getElementById('sh-log-list').innerHTML=shLogs.slice(0,12).map((l,i)=>`
-    <div class="sh-log-item" style="animation-delay:${i*.02}s">
-      <div class="sh-dot ${l.ok?'ok':'err'}"></div>
-      <div class="sh-val">${l.ok?`🌡 ${l.temp}°C · 💧 ${l.hum}% · 🌱 ${l.soil}%`:'Gagal kirim'}</div>
+function addShLog(temp, hum, soil, time) {
+  shTotal++; shOk++;
+  document.getElementById('sh-total').textContent = shTotal;
+  document.getElementById('sh-ok').textContent    = shOk;
+  document.getElementById('sh-fail').textContent  = shFail;
+  shLogs.unshift({ temp, hum, soil, time });
+  if (shLogs.length > 15) shLogs.pop();
+  document.getElementById('sh-log').innerHTML = shLogs.slice(0, 10).map((l, i) => `
+    <div class="sh-item" style="animation-delay:${i * .02}s">
+      <div class="sh-dot ok"></div>
+      <div class="sh-val">🌡 ${l.temp}°C · 💧 ${l.hum}% · 🌱 ${l.soil}%</div>
       <div class="sh-time">${l.time}</div>
     </div>`).join('');
 }
 
-// ══════════════════════════════════════════
-// MAIN UPDATE
-// ══════════════════════════════════════════
-function update(data){
-  const temp=parseFloat(data.Suhu),hum=parseFloat(data.Kelembaban),soil=parseFloat(data.Tanah);
-  if(isNaN(temp)||isNaN(hum)||isNaN(soil)){addLog('warn','⚠ Data tidak valid!',nowStr());return;}
-  const tStr=nowStr();
+// ══════════════════════════════════════════════
+// MAIN UPDATE — dipanggil tiap Firebase berubah
+// ══════════════════════════════════════════════
+function update(data) {
+  const temp = parseFloat(data.Suhu);
+  const hum  = parseFloat(data.Kelembaban);
+  const soil = parseFloat(data.Tanah);
 
-  // Charts
-  labels.push(tStr);dT.push(temp);dH.push(hum);dS.push(soil);
-  if(labels.length>MAX){labels.shift();dT.shift();dH.shift();dS.shift();}
-  soilChart.data.datasets[1].data=Array(labels.length).fill(40);
-  mainChart.update();soilChart.update();
-
-  // Sensor cards
-  document.getElementById('vT').innerHTML=`${temp.toFixed(1)}<span class="cu"> °C</span>`;
-  document.getElementById('vH').innerHTML=`${hum.toFixed(1)}<span class="cu"> %</span>`;
-  document.getElementById('vS').innerHTML=`${soil}<span class="cu"> %</span>`;
-  document.getElementById('bT').style.width=`${Math.min(100,Math.max(0,((temp-15)/30)*100))}%`;
-  document.getElementById('bH').style.width=`${Math.min(100,hum)}%`;
-  document.getElementById('bS').style.width=`${Math.min(100,soil)}%`;
-  if(prevT!==null){const d=(temp-prevT).toFixed(1);document.getElementById('trT').innerHTML=`<span style="color:${d>0?'var(--amber)':'var(--blue)'}">${d>0?'↗':'↘'} ${Math.abs(d)}°C</span> dari sebelumnya`;}
-  document.getElementById('trS').innerHTML=soil<40?`<span style="color:var(--red)">⚠ Perlu disiram!</span>`:`<span style="color:var(--g6)">✓ Cukup lembab</span>`;
-  const stat=sysStatus(temp,hum,soil);
-  document.getElementById('vSt').textContent={NORMAL:'🟢',HANGAT:'🟡',WASPADA:'🟠',KRITIS:'🔴'}[stat]+' '+stat;
-
-  // Aktuator
-  setAct('pelt',parseStatus(data.Peltier));
-  setAct('fan', parseStatus(data.Kipas));
-  setAct('pump',parseStatus(data.PompaAir));
-  setAct('nutr',parseStatus(data.PompaPeristaltik));
-
-  // Card details
-  const pct=(v,mn,mx)=>`${Math.min(100,Math.max(0,((v-mn)/(mx-mn))*100)).toFixed(0)}%`;
-  document.getElementById('cv-pelt').textContent=`${temp.toFixed(1)}°C`;document.getElementById('cf-pelt').style.width=pct(temp,15,45);
-  document.getElementById('cv-fan').textContent=`${temp.toFixed(1)}°C`;document.getElementById('cf-fan').style.width=pct(temp,15,45);
-  document.getElementById('cv-pump').textContent=`${soil}%`;document.getElementById('cf-pump').style.width=`${Math.min(100,soil)}%`;
-  document.getElementById('cv-nutr').textContent=act.nutr?'✅ Aktif':'⭕ Tidak aktif';
-  document.getElementById('cf-nutr').style.width=act.nutr?'100%':'0%';
-
-  // Sync mode pompa air dari Firebase
-  if(data.ModePompaAir!==undefined){
-    const m=String(data.ModePompaAir||'AUTO');
-    const v=m==='MANUAL-ON'?1:m==='MANUAL-OFF'?0:-1;
-    if(v!==curPumpMode){curPumpMode=v;updatePumpUI(v);}
+  if (isNaN(temp) || isNaN(hum) || isNaN(soil)) {
+    addLog('warn', '⚠ Data tidak valid dari Firebase!', nowStr());
+    return;
   }
 
-  // Sheets status (data dikirim oleh ESP32, web hanya monitoring)
-  setShStatus('ok',`✅ Data terakhir: ${temp.toFixed(1)}°C / ${hum.toFixed(1)}% / ${soil}% · ${tStr}`);
-  addShLog(true,temp.toFixed(1),hum.toFixed(1),soil,tStr);
+  const tStr = nowStr();
+
+  // Charts
+  labels.push(tStr); dT.push(temp); dH.push(hum); dS.push(soil);
+  if (labels.length > MAX) { labels.shift(); dT.shift(); dH.shift(); dS.shift(); }
+  soilChart.data.datasets[1].data = Array(labels.length).fill(40);
+  mainChart.update(); soilChart.update();
+
+  // Sensor cards
+  document.getElementById('vT').innerHTML = `${temp.toFixed(1)}<span class="cu"> °C</span>`;
+  document.getElementById('vH').innerHTML = `${hum.toFixed(1)}<span class="cu"> %</span>`;
+  document.getElementById('vS').innerHTML = `${soil}<span class="cu"> %</span>`;
+  document.getElementById('bT').style.width = `${Math.min(100, Math.max(0, ((temp - 15) / 30) * 100))}%`;
+  document.getElementById('bH').style.width = `${Math.min(100, hum)}%`;
+  document.getElementById('bS').style.width = `${Math.min(100, soil)}%`;
+
+  // Trend
+  if (prevT !== null) {
+    const d = (temp - prevT).toFixed(1);
+    const c = d > 0 ? 'var(--amber)' : 'var(--blue)';
+    document.getElementById('trT').innerHTML = `<span style="color:${c}">${d > 0 ? '↗' : '↘'} ${Math.abs(d)}°C</span> dari sebelumnya`;
+  } else {
+    document.getElementById('trT').textContent = '— Data pertama diterima';
+  }
+  document.getElementById('trS').innerHTML = soil < 40
+    ? `<span style="color:var(--red)">⚠ Perlu disiram!</span>`
+    : `<span style="color:var(--g6)">✓ Cukup lembab</span>`;
+
+  // Status
+  const stat = sysStatus(temp, hum, soil);
+  const ico  = { NORMAL:'🟢', HANGAT:'🟡', WASPADA:'🟠', KRITIS:'🔴' }[stat] || '🟢';
+  document.getElementById('vSt').textContent = `${ico} ${stat}`;
+
+  // Aktuator dari Firebase (konfirmasi ESP32)
+  setAct('pelt', parseStatus(data.Peltier));
+  setAct('fan',  parseStatus(data.Kipas));
+  setAct('pump', parseStatus(data.PompaAir));
+  setAct('nutr', parseStatus(data.PompaPeristaltik));
+
+  // Detail cards
+  const pct = (v, mn, mx) => `${Math.min(100, Math.max(0, ((v - mn) / (mx - mn)) * 100)).toFixed(0)}%`;
+  document.getElementById('cv-pelt').textContent = `${temp.toFixed(1)}°C`;
+  document.getElementById('cf-pelt').style.width  = pct(temp, 15, 45);
+  document.getElementById('cv-fan').textContent  = `${temp.toFixed(1)}°C`;
+  document.getElementById('cf-fan').style.width   = pct(temp, 15, 45);
+  document.getElementById('cv-pump').textContent = `${soil}%`;
+  document.getElementById('cf-pump').style.width  = `${Math.min(100, soil)}%`;
+  document.getElementById('cv-nutr').textContent  = act.nutr ? '✅ Aktif (konfirmasi)' : '⭕ Tidak aktif';
+  document.getElementById('cf-nutr').style.width   = act.nutr ? '100%' : '0%';
+
+  // Sync mode pompa air dari Firebase
+  if (data.ModePompaAir !== undefined) {
+    const m = String(data.ModePompaAir || 'AUTO');
+    const v = m === 'MANUAL-ON' ? 1 : m === 'MANUAL-OFF' ? 0 : -1;
+    if (v !== curPumpMode) { curPumpMode = v; updatePumpUI(v); }
+  }
+
+  // Sheets panel (data dikirim oleh ESP32)
+  setShStatus('ok', `✅ Data: ${temp.toFixed(1)}°C / ${hum.toFixed(1)}% / ${soil}% · ${tStr}`);
+  addShLog(temp.toFixed(1), hum.toFixed(1), soil, tStr);
 
   // History
-  histori.push({time:tStr,temp:temp.toFixed(1),hum:hum.toFixed(1),soil,
-    mode:curPumpMode===-1?'AUTO':curPumpMode===1?'M-ON':'M-OFF',
-    pelt:act.pelt,fan:act.fan,pump:act.pump,nutr:act.nutr,status:stat});
-  if(histori.length>80)histori.shift();
+  histori.push({
+    time: tStr, temp: temp.toFixed(1), hum: hum.toFixed(1), soil,
+    mode: curPumpMode === -1 ? 'AUTO' : curPumpMode === 1 ? 'M-ON' : 'M-OFF',
+    pelt: act.pelt, fan: act.fan, pump: act.pump, nutr: act.nutr, status: stat
+  });
+  if (histori.length > 80) histori.shift();
   renderHistori();
 
-  document.getElementById('upd').textContent=tStr;
-  prevT=temp;
+  document.getElementById('upd').textContent = tStr;
+  prevT = temp;
 }
 
-function sysStatus(t,h,s){if(s<20)return'KRITIS';if(t>35||s<40)return'WASPADA';if(t>25)return'HANGAT';return'NORMAL';}
-function bdg(s){const m={NORMAL:'bn',HANGAT:'bw',WASPADA:'bw',KRITIS:'bd'};const l={NORMAL:'✓',HANGAT:'🌡',WASPADA:'⚠',KRITIS:'🚨'};return`<span class="bdg ${m[s]||'bn'}">${l[s]||''} ${s}</span>`;}
-function oc(v,c){return`<span style="color:${v?c:'var(--dim)'}">${v?'ON':'—'}</span>`;}
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+function sysStatus(t, h, s) {
+  if (s < 20) return 'KRITIS';
+  if (t > 35 || s < 40) return 'WASPADA';
+  if (t > 25) return 'HANGAT';
+  return 'NORMAL';
+}
 
-function renderHistori(){
-  document.getElementById('hbody').innerHTML=[...histori].reverse().slice(0,40).map(r=>`
+function bdg(s) {
+  const m = { NORMAL:'bn', HANGAT:'bw', WASPADA:'bw', KRITIS:'bd' };
+  const l = { NORMAL:'✓', HANGAT:'🌡', WASPADA:'⚠', KRITIS:'🚨' };
+  return `<span class="bdg ${m[s] || 'bn'}">${l[s] || ''} ${s}</span>`;
+}
+
+function oc(v, c) { return `<span style="color:${v ? c : 'var(--dim)'}">${v ? 'ON' : '—'}</span>`; }
+
+function renderHistori() {
+  document.getElementById('hbody').innerHTML = [...histori].reverse().slice(0, 40).map(r => `
     <tr>
       <td>${r.time}</td>
       <td style="color:var(--amber)">${r.temp}°C</td>
       <td style="color:var(--blue)">${r.hum}%</td>
       <td style="color:var(--g6)">${r.soil}%</td>
-      <td style="color:${r.mode==='AUTO'?'var(--lime)':r.mode==='M-ON'?'var(--blue)':'var(--red)'">${r.mode}</td>
-      <td>${oc(r.pelt,'var(--blue)')}</td>
-      <td>${oc(r.fan,'var(--blue)')}</td>
-      <td>${oc(r.pump,'var(--blue)')}</td>
-      <td><span style="color:${r.nutr?'var(--violet)':'var(--dim)'}">${r.nutr?'ON':'—'}</span></td>
+      <td style="color:${r.mode === 'AUTO' ? 'var(--lime)' : r.mode === 'M-ON' ? 'var(--blue)' : 'var(--red)'}">${r.mode}</td>
+      <td>${oc(r.pelt, 'var(--blue)')}</td>
+      <td>${oc(r.fan,  'var(--blue)')}</td>
+      <td>${oc(r.pump, 'var(--blue)')}</td>
+      <td><span style="color:${r.nutr ? 'var(--violet)' : 'var(--dim)'}">${r.nutr ? 'ON' : '—'}</span></td>
       <td>${bdg(r.status)}</td>
     </tr>`).join('');
 }
 
-const ICO={on:'🟢',off:'⭕',warn:'⚠️',info:'📡',alert:'🚨'};
-function addLog(type,msg,time){
-  logs.unshift({type,msg,time});if(logs.length>50)logs.pop();
-  document.getElementById('lbody').innerHTML=logs.slice(0,18).map((l,i)=>`
-    <div class="logi" style="animation-delay:${i*.02}s">
-      <div class="liico">${ICO[l.type]||'📌'}</div>
+const ICO = { on:'🟢', off:'⭕', warn:'⚠️', info:'📡', alert:'🚨' };
+function addLog(type, msg, time) {
+  logs.unshift({ type, msg, time });
+  if (logs.length > 50) logs.pop();
+  document.getElementById('lbody').innerHTML = logs.slice(0, 18).map((l, i) => `
+    <div class="logi" style="animation-delay:${i * .02}s">
+      <div class="liico">${ICO[l.type] || '📌'}</div>
       <div><div class="limsg">${l.msg}</div><div class="litm">${l.time}</div></div>
     </div>`).join('');
-  document.getElementById('lcnt').textContent=`${logs.length} log`;
+  document.getElementById('lcnt').textContent = `${logs.length} log`;
 }
 
-function expCSV(){
-  const rows=[['Waktu','Suhu','Hum','Tanah','Mode Air','Peltier','Fan','PompaAir','Nutrisi','Status']];
-  histori.forEach(r=>rows.push([r.time,r.temp,r.hum,r.soil,r.mode,r.pelt?'ON':'OFF',r.fan?'ON':'OFF',r.pump?'ON':'OFF',r.nutr?'ON':'OFF',r.status]));
-  const b=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
-  const u=URL.createObjectURL(b);const a=document.createElement('a');
-  a.href=u;a.download=`greenhouse_${Date.now()}.csv`;a.click();URL.revokeObjectURL(u);
+function expCSV() {
+  const rows = [['Waktu','Suhu','Hum','Tanah','Mode Air','Peltier','Fan','PompaAir','Nutrisi','Status']];
+  histori.forEach(r => rows.push([r.time, r.temp, r.hum, r.soil, r.mode,
+    r.pelt?'ON':'OFF', r.fan?'ON':'OFF', r.pump?'ON':'OFF', r.nutr?'ON':'OFF', r.status]));
+  const b = new Blob([rows.map(r => r.join(',')).join('\n')], { type:'text/csv' });
+  const u = URL.createObjectURL(b);
+  const a = document.createElement('a');
+  a.href = u; a.download = `greenhouse_${Date.now()}.csv`; a.click();
+  URL.revokeObjectURL(u);
 }
 
-function nowStr(){return new Date().toLocaleTimeString('id-ID');}
-
-// Init
-addLog('info','🌿 Dashboard v3.0 dimuat. Connecting Firebase…',nowStr());
+// ══════════════════════════════════════════════
+// INIT & FIREBASE LISTENER
+// ══════════════════════════════════════════════
+addLog('info', '🌿 Dashboard v4.0 dimuat. Connecting Firebase…', nowStr());
 renderHistori();
-setShStatus('','Menunggu data dari ESP32…');
+setShStatus('', 'Menunggu data dari ESP32…');
 
+// Listener utama — bereaksi setiap ada perubahan di /Monitoring
 db.ref('/Monitoring').on('value',
-  function(snap){
-    const data=snap.val();
-    if(!data){addLog('warn','⚠ /Monitoring kosong.',nowStr());return;}
-    if(!firstData){
-      firstData=true;
-      document.getElementById('fbTxt').textContent='Connected ✓';
-      document.getElementById('fbTxt').style.color='var(--g6)';
-      addLog('info','✅ Firebase terhubung!',nowStr());
+  function(snapshot) {
+    const data = snapshot.val();
+    if (!data) {
+      addLog('warn', '⚠ /Monitoring kosong. ESP32 belum kirim data.', nowStr());
+      return;
+    }
+    if (!firstData) {
+      firstData = true;
+      document.getElementById('fbTxt').textContent = 'Connected ✓';
+      document.getElementById('fbTxt').style.color = 'var(--g6)';
+      document.getElementById('fb-status').textContent = 'Firebase OK';
+      addLog('info', '✅ Firebase terhubung! Data ESP32 masuk.', nowStr());
     }
     update(data);
   },
-  function(err){
-    addLog('alert','🚨 Firebase error: '+err.message,nowStr());
-    document.getElementById('vSt').textContent='🔴 OFFLINE';
-    document.getElementById('fbTxt').style.color='var(--red)';
-    setShStatus('err','Firebase error — cek koneksi');
+  function(error) {
+    addLog('alert', '🚨 Firebase error: ' + error.message, nowStr());
+    document.getElementById('vSt').textContent = '🔴 OFFLINE';
+    document.getElementById('fbTxt').textContent = 'Error!';
+    document.getElementById('fbTxt').style.color = 'var(--red)';
+    document.getElementById('fb-status').textContent = 'Firebase Error';
+    setShStatus('err', 'Firebase error — cek koneksi internet');
   }
 );
 
-// Sync mode pompa air saat load
-db.ref('/Control/PompaAir').once('value').then(snap=>{
-  const v=snap.val();
-  const mode=(v===null||v===undefined)?-1:parseInt(v);
-  curPumpMode=isNaN(mode)?-1:mode;
+// Sync mode pompa air saat pertama buka dashboard
+db.ref('/Control/PompaAir').once('value').then(snap => {
+  const v = snap.val();
+  const mode = (v === null || v === undefined) ? -1 : parseInt(v);
+  curPumpMode = isNaN(mode) ? -1 : mode;
   updatePumpUI(curPumpMode);
-  if(v===null)db.ref('/Control/PompaAir').set(-1);
-});
+  if (v === null) db.ref('/Control/PompaAir').set(-1);
+}).catch(() => updatePumpUI(-1));
+
+// Sync status tombol nutrisi saat pertama buka
+db.ref('/Control/PompaNutrisi').once('value').then(snap => {
+  const v = parseInt(snap.val() || 0);
+  document.getElementById('nb-on').className  = 'nbtn non'  + (v === 1 ? ' sel' : '');
+  document.getElementById('nb-off').className = 'nbtn noff' + (v === 0 ? ' sel' : '');
+}).catch(() => {});
 </script>
 </body>
 </html>
