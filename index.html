@@ -27,6 +27,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;
   linear-gradient(90deg,rgba(82,196,122,.03) 1px,transparent 1px);
   background-size:48px 48px;pointer-events:none}
 .wrap{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:0 20px 60px}
+
 header{display:flex;align-items:center;justify-content:space-between;
   padding:22px 0 24px;border-bottom:1px solid var(--border);margin-bottom:22px;flex-wrap:wrap;gap:10px}
 .brand{display:flex;align-items:center;gap:13px}
@@ -42,6 +43,16 @@ header{display:flex;align-items:center;justify-content:space-between;
 .dot{width:7px;height:7px;border-radius:50%;background:var(--g6);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(82,196,122,.5)}50%{box-shadow:0 0 0 5px rgba(82,196,122,0)}}
 #upd{font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:var(--bg0);z-index:999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.spin{width:40px;height:40px;border:3px solid var(--g2);border-top-color:var(--g5);
+  border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted)}
+#load-prog{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--g6);margin-top:4px}
+
 .sr{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
 .sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
   padding:18px 15px 14px;backdrop-filter:blur(14px);position:relative;overflow:hidden;transition:transform .2s}
@@ -57,6 +68,7 @@ header{display:flex;align-items:center;justify-content:space-between;
 .ch{color:var(--blue)}.ch .sbf{background:linear-gradient(90deg,#1db8d6,var(--blue))}
 .cs{color:var(--g6)}.cs .sbf{background:linear-gradient(90deg,var(--g3),var(--g6))}
 .cx{color:var(--lime)}
+
 .chrow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
   backdrop-filter:blur(14px);overflow:hidden}
@@ -70,6 +82,7 @@ header{display:flex;align-items:center;justify-content:space-between;
   border:none;background:transparent;color:var(--muted);transition:all .2s;font-family:'Syne',sans-serif}
 .ctb.act{background:var(--g2);color:var(--g7)}
 .cbox{padding:13px 15px;height:210px}
+
 .asec{margin-bottom:14px}
 .asec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
 .asec-hd h2{font-size:.93rem;font-weight:800;color:var(--g7);display:flex;align-items:center;gap:9px}
@@ -108,28 +121,11 @@ header{display:flex;align-items:center;justify-content:space-between;
 .acard.on      .adot{background:var(--g5);box-shadow:0 0 5px var(--g5)}
 .acard.cool.on .adot{background:var(--blue);box-shadow:0 0 5px var(--blue)}
 .acard.warm.on .adot{background:var(--amber);box-shadow:0 0 5px var(--amber)}
-@keyframes spin{to{transform:rotate(360deg)}}
-.acard.on .spn{display:inline-block;animation:spin .8s linear infinite}
+@keyframes spinR{to{transform:rotate(360deg)}}
+.acard.on .spn{display:inline-block;animation:spinR .8s linear infinite}
 .hint{font-size:.57rem;color:var(--muted);font-family:'Space Mono',monospace}
-.ctrl-wrap{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}
-.ctrl-lbl{font-size:.6rem;color:var(--dim);font-family:'Space Mono',monospace;
-  text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
-.pump-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px}
-.pbtn{padding:8px 0;border-radius:8px;font-family:'Syne',sans-serif;font-size:.72rem;
-  font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.04);color:var(--muted);transition:all .18s}
-.pbtn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.2)}
-.pbtn.auto.sel{background:rgba(212,255,78,.15);border-color:rgba(212,255,78,.45);color:var(--lime)}
-.pbtn.pon.sel {background:rgba(67,217,245,.15);border-color:rgba(67,217,245,.45);color:var(--blue)}
-.pbtn.poff.sel{background:rgba(255,82,82,.13); border-color:rgba(255,82,82,.42); color:var(--red)}
-.ctrl-fb{font-size:.62rem;font-family:'Space Mono',monospace;padding:4px 8px;border-radius:6px;
-  text-align:center;opacity:0;transition:opacity .3s;min-height:22px}
-.ctrl-fb.show{opacity:1}
-.ctrl-fb.ok  {background:rgba(82,196,122,.1);color:var(--g6);border:1px solid rgba(82,196,122,.2)}
-.ctrl-fb.err {background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)}
-.ctrl-fb.wait{background:rgba(67,217,245,.07);color:var(--blue);border:1px solid rgba(67,217,245,.18)}
 
-/* DATA LOGGING */
+/* LOG PANEL */
 .log-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
   backdrop-filter:blur(14px);overflow:hidden;margin-bottom:14px}
 .log-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
@@ -143,17 +139,9 @@ header{display:flex;align-items:center;justify-content:space-between;
   display:flex;align-items:center;gap:8px}
 .exp-title::before{content:'';width:3px;height:14px;
   background:linear-gradient(var(--g5),var(--lime));border-radius:2px;display:block}
-.exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.exp-opt{background:rgba(255,255,255,.03);border:1px solid var(--border);
-  border-radius:10px;padding:12px;cursor:pointer;transition:all .2s}
-.exp-opt:hover{border-color:rgba(82,196,122,.3);background:rgba(82,196,122,.05)}
-.exp-opt.sel{border-color:rgba(82,196,122,.4);background:rgba(82,196,122,.08)}
-.exp-opt-title{font-size:.72rem;font-weight:700;color:var(--txt);margin-bottom:4px}
-.exp-opt-desc{font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace;line-height:1.5}
-.exp-preview{background:rgba(0,0,0,.3);border:1px solid var(--border);
-  border-radius:10px;padding:12px;margin-bottom:12px;overflow-x:auto}
-.exp-preview pre{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--g6);
-  line-height:1.7;white-space:pre}
+.exp-note{font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace;
+  background:rgba(82,196,122,.06);border:1px solid var(--border);border-radius:8px;
+  padding:8px 12px;margin-bottom:12px;line-height:1.6}
 .exp-btn{display:flex;align-items:center;justify-content:center;gap:8px;
   width:100%;padding:11px;border-radius:10px;border:none;
   background:linear-gradient(135deg,var(--g3),var(--g5));color:white;
@@ -162,16 +150,15 @@ header{display:flex;align-items:center;justify-content:space-between;
 .exp-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
 .exp-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 
-/* TABEL */
 .botrow{display:grid;grid-template-columns:1fr 320px;gap:14px}
-.hbody{padding:0 17px 15px;max-height:280px;overflow-y:auto}
-.lbody{padding:11px 17px 15px;max-height:280px;overflow-y:auto}
+.hbody{padding:0 17px 15px;max-height:300px;overflow-y:auto}
+.lbody{padding:11px 17px 15px;max-height:300px;overflow-y:auto}
 .hbody::-webkit-scrollbar,.lbody::-webkit-scrollbar{width:3px}
 .hbody::-webkit-scrollbar-thumb,.lbody::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
 table{width:100%;border-collapse:collapse}
 thead th{padding:8px 6px;text-align:left;font-size:.57rem;text-transform:uppercase;
-  letter-spacing:1.2px;color:var(--dim);font-weight:700;position:sticky;top:0;
-  background:var(--bg1);z-index:1;white-space:nowrap}
+  letter-spacing:1.2px;color:var(--dim);font-weight:700;
+  position:sticky;top:0;background:var(--bg1);z-index:1;white-space:nowrap}
 tbody tr{border-top:1px solid rgba(82,196,122,.05)}
 tbody tr:hover{background:rgba(82,196,122,.04)}
 tbody td{padding:7px 6px;font-family:'Space Mono',monospace;font-size:.6rem;white-space:nowrap}
@@ -186,20 +173,28 @@ tbody td{padding:7px 6px;font-family:'Space Mono',monospace;font-size:.6rem;whit
 footer{border-top:1px solid var(--border);padding:16px 0;display:flex;
   justify-content:space-between;margin-top:22px;flex-wrap:wrap;gap:6px}
 footer div{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
-@media(max-width:900px){.agrid{grid-template-columns:1fr}.botrow{grid-template-columns:1fr}.exp-grid{grid-template-columns:1fr}.log-stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.agrid{grid-template-columns:1fr}.botrow{grid-template-columns:1fr}.log-stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.sr{grid-template-columns:1fr 1fr}.chrow{grid-template-columns:1fr}}
 @media(max-width:480px){.sr{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="wrap">
+
+<!-- LOADING SCREEN -->
+<div id="loading">
+  <div class="spin"></div>
+  <div class="load-txt">🌿 Smart Greenhouse</div>
+  <div id="load-prog">Mengambil data dari Firebase...</div>
+</div>
+
+<div class="wrap" id="main" style="display:none">
 
 <header>
   <div class="brand">
     <div class="bico">🌿</div>
     <div>
       <h1>Smart Greenhouse</h1>
-      <p>ESP32 · DHT22 · Soil · Fan · Pompa Air · SD Card · Firebase</p>
+      <p>ESP32 · DHT22 · Soil · Fan Auto · Pompa Auto · SD Card</p>
     </div>
   </div>
   <div class="hdr-r">
@@ -267,9 +262,9 @@ footer div{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
 <div class="asec">
   <div class="asec-hd">
     <h2>Status Aktuator</h2>
-    <span style="font-size:.63rem;color:var(--muted);font-family:'Space Mono',monospace;
-      background:rgba(82,196,122,.06);border:1px solid var(--border);border-radius:7px;padding:3px 10px">
-      Fan = Auto Suhu &gt;30°C · Pompa = Auto Tanah &lt;40% + Manual
+    <span style="font-size:.63rem;color:var(--lime);font-family:'Space Mono',monospace;
+      background:rgba(212,255,78,.06);border:1px solid rgba(212,255,78,.2);border-radius:7px;padding:3px 10px">
+      ⚙ Semua OTOMATIS penuh — tidak ada kontrol manual
     </span>
   </div>
   <div class="agrid">
@@ -281,53 +276,44 @@ footer div{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
         </div>
         <div class="spill" id="sp-fan">⭕ OFF</div>
       </div>
-      <div class="mbadge">⚙ AUTO · Suhu &gt;30°C</div>
+      <div class="mbadge">⚙ AUTO · Suhu &gt;30°C → ON</div>
       <div class="cbar">
         <div class="clbl"><span>Suhu saat ini</span><span id="cv-fan">—</span></div>
         <div class="ctrk"><div class="cfill" id="cf-fan" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
       </div>
       <div class="srow">
         <div class="astat"><div class="adot"></div><span id="as-fan">STANDBY</span></div>
-        <span class="hint">ON jika Suhu &gt;30°C</span>
+        <span class="hint">Otomatis ON jika Suhu &gt;30°C</span>
       </div>
     </div>
     <div class="acard warm" id="ac-pump">
       <div class="atop">
         <div><div class="aico">💧</div>
           <div class="aname">Pompa Air</div>
-          <div class="asub">GPIO 33 · 5V · Auto+Manual</div>
+          <div class="asub">GPIO 33 · 5V · Full Otomatis</div>
         </div>
         <div class="spill" id="sp-pump">⭕ OFF</div>
       </div>
-      <div class="mbadge" id="badge-pump">⚙ AUTO · Tanah &lt;40%</div>
+      <div class="mbadge">⚙ AUTO · Tanah &lt;40% → ON hingga ≥40%</div>
       <div class="cbar">
         <div class="clbl"><span>Kelembaban tanah</span><span id="cv-pump">—</span></div>
         <div class="ctrk"><div class="cfill" id="cf-pump" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
       </div>
       <div class="srow">
         <div class="astat"><div class="adot"></div><span id="as-pump">STANDBY</span></div>
-        <span class="hint" id="hint-pump">ON jika Tanah &lt;40%</span>
-      </div>
-      <div class="ctrl-wrap">
-        <div class="ctrl-lbl">Override Manual Pompa Air</div>
-        <div class="pump-btns">
-          <button class="pbtn auto sel" id="pb-auto" onclick="setPompa(-1)">⚙ AUTO</button>
-          <button class="pbtn pon"      id="pb-on"   onclick="setPompa(1)" >▶ ON</button>
-          <button class="pbtn poff"     id="pb-off"  onclick="setPompa(0)" >■ OFF</button>
-        </div>
-        <div class="ctrl-fb" id="fb-pump"></div>
+        <span class="hint">ON terus hingga Tanah ≥40%</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- DATA LOGGING & EXPORT -->
+<!-- DATA LOGGING -->
 <div class="log-panel">
   <div class="ph">
-    <div class="pt"><i></i>📊 Data Logging & Export CSV</div>
-    <span style="font-size:.63rem;color:var(--muted);font-family:'Space Mono',monospace">
-      SD Card: backup otomatis saat WiFi mati
-    </span>
+    <div class="pt"><i></i>📊 Data Logging — Tersimpan di Firebase & SD Card</div>
+    <button class="exp-btn" id="exp-btn" onclick="expCSV()" style="width:auto;padding:7px 14px">
+      ⬇ Download CSV
+    </button>
   </div>
   <div class="log-stats">
     <div class="ls">
@@ -348,36 +334,13 @@ footer div{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
     </div>
   </div>
   <div class="exp-area">
-    <div class="exp-title">Pilih Format Export</div>
-    <div class="exp-grid">
-      <div class="exp-opt sel" id="opt-excel" onclick="selOpt('excel')">
-        <div class="exp-opt-title">📊 Format Excel / Google Sheets</div>
-        <div class="exp-opt-desc">
-          Setiap kolom terpisah:<br>
-          No | Hari | Tanggal | Bulan | Tahun | Jam<br>
-          Suhu | Kelembaban | Tanah | Fan | Pompa | Status
-        </div>
-      </div>
-      <div class="exp-opt" id="opt-report" onclick="selOpt('report')">
-        <div class="exp-opt-title">📋 Format Laporan</div>
-        <div class="exp-opt-desc">
-          Header lengkap dengan info proyek<br>
-          Tanggal export & total data<br>
-          Cocok untuk laporan & print
-        </div>
-      </div>
+    <div class="exp-note">
+      ✅ Data tersimpan <strong>permanen di Firebase</strong> — tidak hilang meski web ditutup atau ESP32 restart<br>
+      💾 Backup otomatis ke <strong>SD Card</strong> saat WiFi mati<br>
+      📥 Download CSV kapanpun — semua data dari pertama menyalakan sistem
     </div>
-
-    <!-- Preview -->
-    <div class="exp-preview">
-      <div style="font-size:.58rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:6px">
-        Preview — 3 baris pertama:
-      </div>
-      <pre id="csv-preview">Belum ada data. Tunggu data masuk dari ESP32...</pre>
-    </div>
-
-    <button class="exp-btn" id="exp-btn" onclick="expCSV()" disabled>
-      ⬇ Download CSV
+    <button class="exp-btn" id="exp-btn2" onclick="expCSV()">
+      ⬇ Download Semua Data CSV (<span id="total-csv">0</span> data)
     </button>
   </div>
 </div>
@@ -386,7 +349,7 @@ footer div{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
 <div class="botrow">
   <div class="panel">
     <div class="ph">
-      <div class="pt"><i></i>Riwayat Data</div>
+      <div class="pt"><i></i>Riwayat Data Lengkap</div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:.6rem;color:var(--muted);font-family:'Space Mono',monospace" id="total-lbl">0 data</span>
         <button onclick="expCSV()" style="padding:5px 12px;border-radius:8px;border:1px solid rgba(82,196,122,.3);
@@ -416,7 +379,7 @@ footer div{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
 
 <footer>
   <div>SMART GREENHOUSE · ESP32 · DHT22 · Soil · Fan GPIO32 · Pompa Air GPIO33 · SD Card GPIO5</div>
-  <div>Firebase + SD Card Backup · CSV Export Terstruktur · © 2025</div>
+  <div>Data Permanen Firebase + SD Card Backup · Full Auto Logic · © 2025</div>
 </footer>
 </div>
 
@@ -433,27 +396,14 @@ const FB_CFG = {
 firebase.initializeApp(FB_CFG);
 const db = firebase.database();
 
-const MAX=30, labels=[], dT=[], dH=[], dS=[], histori=[], logs=[];
-let prevT=null, firstData=false, pumpLock=false, expMode='excel';
+// ── STATE ─────────────────────────────────────
+const MAX=30, labels=[], dT=[], dH=[], dS=[];
+const histori = [];  // semua data dari Firebase
+const logs    = [];
+let prevT=null, firstData=false;
 let cntN=0, cntW=0, cntC=0;
 
-const HARI  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-const BULAN = ['Januari','Februari','Maret','April','Mei','Juni',
-               'Juli','Agustus','September','Oktober','November','Desember'];
-
-function getW(d){
-  const p=n=>String(n).padStart(2,'0');
-  return {
-    hari:HARI[d.getDay()],
-    tgl:p(d.getDate()),
-    bln:BULAN[d.getMonth()],
-    blnNum:p(d.getMonth()+1),
-    thn:d.getFullYear(),
-    jam:`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
-  };
-}
-
-// Charts
+// ── CHARTS ────────────────────────────────────
 const bOpt={responsive:true,maintainAspectRatio:false,animation:{duration:500},
   plugins:{legend:{labels:{color:'#5d9471',font:{family:"'Space Mono',monospace",size:9},boxWidth:9,padding:10}},
   tooltip:{backgroundColor:'rgba(6,15,10,.94)',borderColor:'rgba(82,196,122,.22)',borderWidth:1,
@@ -463,144 +413,68 @@ const bOpt={responsive:true,maintainAspectRatio:false,animation:{duration:500},
     x:{ticks:{color:'#2a4d36',font:{family:"'Space Mono',monospace",size:8},maxTicksLimit:7},grid:{color:'rgba(82,196,122,.04)'}},
     y:{ticks:{color:'#2a4d36',font:{family:"'Space Mono',monospace",size:8}},grid:{color:'rgba(82,196,122,.04)'}}
   }};
+
 const ds={
   temp:[{label:'Suhu (°C)',data:dT,borderColor:'#ffad3b',backgroundColor:'rgba(255,173,59,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
   hum: [{label:'Kelembaban (%)',data:dH,borderColor:'#43d9f5',backgroundColor:'rgba(67,217,245,.08)',tension:.4,fill:true,pointRadius:0,borderWidth:2}],
   all: [{label:'Suhu',data:dT,borderColor:'#ffad3b',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2},
         {label:'Hum', data:dH,borderColor:'#43d9f5',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:0,borderWidth:2}]
 };
-const mc=new Chart(document.getElementById('mc').getContext('2d'),{type:'line',data:{labels,datasets:ds.temp},options:JSON.parse(JSON.stringify(bOpt))});
-const sOpt=JSON.parse(JSON.stringify(bOpt)); sOpt.scales.y={...sOpt.scales.y,min:0,max:100};
-const sc2=new Chart(document.getElementById('sc2').getContext('2d'),{type:'line',
-  data:{labels,datasets:[
+
+const mc=new Chart(document.getElementById('mc').getContext('2d'),
+  {type:'line',data:{labels,datasets:ds.temp},options:JSON.parse(JSON.stringify(bOpt))});
+const sOpt=JSON.parse(JSON.stringify(bOpt));
+sOpt.scales.y={...sOpt.scales.y,min:0,max:100};
+const sc2=new Chart(document.getElementById('sc2').getContext('2d'),{
+  type:'line',data:{labels,datasets:[
     {label:'Tanah (%)',data:dS,borderColor:'#52c47a',backgroundColor:'rgba(82,196,122,.1)',tension:.4,fill:true,pointRadius:0,borderWidth:2.5},
     {label:'Batas 40%',data:Array(MAX).fill(40),borderColor:'rgba(255,82,82,.5)',backgroundColor:'transparent',borderDash:[5,3],pointRadius:0,borderWidth:1.5}
-  ]},options:sOpt});
+  ]},options:sOpt
+});
 
-function swCh(m,btn){document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('act'));btn.classList.add('act');mc.data.datasets=ds[m];mc.update();}
+function swCh(m,btn){
+  document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  mc.data.datasets=ds[m]; mc.update();
+}
 
+// ── HELPERS ───────────────────────────────────
 function parseON(v){return['ON','1','TRUE'].includes(String(v||'').trim().toUpperCase());}
 function nowStr(){return new Date().toLocaleTimeString('id-ID');}
-function sysStatus(t,s){if(s<20)return'KRITIS';if(t>35||s<40)return'WASPADA';if(t>25)return'HANGAT';return'NORMAL';}
-function bdg(s){const m={NORMAL:'bn',HANGAT:'bw',WASPADA:'bw',KRITIS:'bd'};const l={NORMAL:'✓',HANGAT:'🌡',WASPADA:'⚠',KRITIS:'🚨'};return`<span class="bdg ${m[s]||'bn'}">${l[s]||''} ${s}</span>`;}
-
+function sysStatus(t,s){
+  if(s<20)return'KRITIS';
+  if(t>35||s<40)return'WASPADA';
+  if(t>25)return'HANGAT';
+  return'NORMAL';
+}
+function bdg(s){
+  const m={NORMAL:'bn',HANGAT:'bw',WASPADA:'bw',KRITIS:'bd'};
+  const l={NORMAL:'✓',HANGAT:'🌡',WASPADA:'⚠',KRITIS:'🚨'};
+  return`<span class="bdg ${m[s]||'bn'}">${l[s]||''} ${s}</span>`;
+}
 function setAct(id,on){
-  const c=document.getElementById('ac-'+id);if(!c)return;
+  const c=document.getElementById('ac-'+id); if(!c)return;
   on?c.classList.add('on'):c.classList.remove('on');
   document.getElementById('sp-'+id).textContent=on?'🟢 ON':'⭕ OFF';
   document.getElementById('as-'+id).textContent=on?'AKTIF':'STANDBY';
 }
-function showFb(el,t,m){el.className=`ctrl-fb show ${t}`;el.textContent=m;if(t!=='wait')setTimeout(()=>{el.className='ctrl-fb';},4000);}
 
-function setPompa(val){
-  if(pumpLock)return; pumpLock=true;
-  const fb2=document.getElementById('fb-pump');
-  const lbl={'-1':'AUTO','0':'MANUAL OFF','1':'MANUAL ON'};
-  showFb(fb2,'wait',`📡 Set → ${lbl[String(val)]}…`);
-  db.ref('/Control/PompaAir').set(val)
-    .then(()=>{updatePumpUI(val);showFb(fb2,'ok',`✅ Pompa → ${lbl[String(val)]}`);addLog('info',`[WEB] PompaAir=${lbl[String(val)]}`,nowStr());})
-    .catch(e=>showFb(fb2,'err',`🚨 ${e.message}`))
-    .finally(()=>setTimeout(()=>{pumpLock=false;},1500));
-}
-function updatePumpUI(val){
-  document.getElementById('pb-auto').className='pbtn auto'+(val===-1?' sel':'');
-  document.getElementById('pb-on').className  ='pbtn pon' +(val===1 ?' sel':'');
-  document.getElementById('pb-off').className ='pbtn poff'+(val===0 ?' sel':'');
-  const bg=document.getElementById('badge-pump');
-  const hi=document.getElementById('hint-pump');
-  if(val===1){bg.textContent='🖥 MANUAL ON';bg.style.cssText='background:rgba(67,217,245,.1);color:var(--blue);border:1px solid rgba(67,217,245,.2)';hi.textContent='Paksa ON dari web';}
-  else if(val===0){bg.textContent='🖥 MANUAL OFF';bg.style.cssText='background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)';hi.textContent='Paksa OFF dari web';}
-  else{bg.textContent='⚙ AUTO · Tanah <40%';bg.style.cssText='background:rgba(212,255,78,.1);color:var(--lime);border:1px solid rgba(212,255,78,.2)';hi.textContent='ON otomatis jika Tanah <40%';}
+// ── LOG ───────────────────────────────────────
+const ICO={on:'🟢',off:'⭕',warn:'⚠️',info:'📡',alert:'🚨'};
+function addLog(t,m,time){
+  logs.unshift({t,m,time}); if(logs.length>50)logs.pop();
+  document.getElementById('lbody').innerHTML=logs.slice(0,18).map((l,i)=>`
+    <div class="logi">
+      <div class="liico">${ICO[l.t]||'📌'}</div>
+      <div><div class="limsg">${l.m}</div><div class="litm">${l.time}</div></div>
+    </div>`).join('');
+  document.getElementById('lcnt').textContent=`${logs.length} log`;
 }
 
-// ── SELECT FORMAT ─────────────────────────────
-function selOpt(m){
-  expMode=m;
-  document.getElementById('opt-excel').className ='exp-opt'+(m==='excel'  ?' sel':'');
-  document.getElementById('opt-report').className='exp-opt'+(m==='report' ?' sel':'');
-  updatePreview();
-}
-
-function updatePreview(){
-  const el=document.getElementById('csv-preview');
-  if(histori.length===0){el.textContent='Belum ada data. Tunggu data masuk dari ESP32...';return;}
-  const rows=buildCSV(histori.slice(0,3),true);
-  el.textContent=rows;
-}
-
-// ── BUILD CSV ────────────────────────────────
-function buildCSV(data, previewOnly=false){
-  const SEP=',';
-  const NL='\n';
-  let out='';
-
-  if(expMode==='report'){
-    // Header laporan
-    const now=new Date(); const w=getW(now);
-    out+=`LAPORAN DATA SMART GREENHOUSE${NL}`;
-    out+=`Tanggal Export   : ${w.hari}${SEP} ${w.tgl} ${w.bln} ${w.thn}${NL}`;
-    out+=`Jam Export       : ${w.jam}${NL}`;
-    out+=`Total Data       : ${histori.length} data${NL}`;
-    out+=`Perangkat        : ESP32 + DHT22 + Soil Sensor${NL}`;
-    out+=`${NL}`;
-  }
-
-  // Header kolom
-  const headers=[
-    'No',
-    'Hari',
-    'Tanggal',
-    'Bulan',
-    'Tahun',
-    'Jam',
-    'Suhu (C)',
-    'Kelembaban (%)',
-    'Tanah (%)',
-    'Fan',
-    'Pompa Air',
-    'Status'
-  ];
-  out+=headers.join(SEP)+NL;
-
-  // Data
-  data.forEach(r=>{
-    out+=[
-      r.no,
-      r.hari,
-      r.tgl,
-      r.bln,
-      r.thn,
-      r.jam,
-      r.temp,
-      r.hum,
-      r.soil,
-      r.fan,
-      r.pompa,
-      r.status
-    ].join(SEP)+NL;
-  });
-
-  return out;
-}
-
-// ── EXPORT CSV ───────────────────────────────
-function expCSV(){
-  if(histori.length===0){alert('Belum ada data!');return;}
-  const csv  = buildCSV(histori);
-  const bom  = '\uFEFF';
-  const blob = new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
-  const url  = URL.createObjectURL(blob);
-  const now  = new Date(); const w=getW(now);
-  const nama = `SmartGreenhouse_${w.tgl}-${w.blnNum}-${w.thn}_${w.jam.replace(/:/g,'-')}.csv`;
-  const a=document.createElement('a');
-  a.href=url; a.download=nama; a.click();
-  URL.revokeObjectURL(url);
-  addLog('info',`⬇ CSV: ${nama} (${histori.length} data)`,nowStr());
-}
-
-// ── RENDER ───────────────────────────────────
+// ── RENDER TABEL ──────────────────────────────
 function renderHistori(){
-  document.getElementById('hbody').innerHTML=[...histori].reverse().slice(0,50).map(r=>`
+  const rows=[...histori].reverse().slice(0,50);
+  document.getElementById('hbody').innerHTML=rows.map(r=>`
     <tr>
       <td style="color:var(--dim)">${r.no}</td>
       <td>${r.hari}</td>
@@ -608,111 +482,199 @@ function renderHistori(){
       <td>${r.bln}</td>
       <td style="color:var(--muted)">${r.thn}</td>
       <td style="color:var(--lime);font-family:'Space Mono',monospace">${r.jam}</td>
-      <td style="color:var(--amber)">${r.temp}°C</td>
+      <td style="color:var(--amber)">${r.suhu}°C</td>
       <td style="color:var(--blue)">${r.hum}%</td>
-      <td style="color:var(--g6)">${r.soil}%</td>
+      <td style="color:var(--g6)">${r.tanah}%</td>
       <td style="color:${r.fan==='ON'?'var(--blue)':'var(--dim)'}">${r.fan==='ON'?'ON':'—'}</td>
       <td style="color:${r.pompa==='ON'?'var(--blue)':'var(--dim)'}">${r.pompa==='ON'?'ON':'—'}</td>
       <td>${bdg(r.status)}</td>
     </tr>`).join('');
-  document.getElementById('total-lbl').textContent=`${histori.length} data`;
+
+  const total=histori.length;
+  document.getElementById('total-lbl').textContent=`${total} data`;
+  document.getElementById('total-csv').textContent=total;
+  document.getElementById('ls-total').textContent=total;
 }
 
-const ICO={on:'🟢',off:'⭕',warn:'⚠️',info:'📡',alert:'🚨'};
-function addLog(t,m,time){
-  logs.unshift({t,m,time}); if(logs.length>50)logs.pop();
-  document.getElementById('lbody').innerHTML=logs.slice(0,18).map((l,i)=>`
-    <div class="logi" style="animation-delay:${i*.02}s">
-      <div class="liico">${ICO[l.t]||'📌'}</div>
-      <div><div class="limsg">${l.m}</div><div class="litm">${l.time}</div></div>
-    </div>`).join('');
-  document.getElementById('lcnt').textContent=`${logs.length} log`;
+function updateStats(){
+  cntN=0; cntW=0; cntC=0;
+  histori.forEach(r=>{
+    if(r.status==='NORMAL')cntN++;
+    else if(r.status==='KRITIS')cntC++;
+    else cntW++;
+  });
+  document.getElementById('ls-normal').textContent=cntN;
+  document.getElementById('ls-warn').textContent  =cntW;
+  document.getElementById('ls-crit').textContent  =cntC;
 }
 
-// ── FIREBASE ─────────────────────────────────
-addLog('info','🌿 Dashboard dimuat. Connecting Firebase…',nowStr());
+// ── UPDATE REALTIME ───────────────────────────
+function updateRealtime(data){
+  const temp=parseFloat(data.Suhu);
+  const hum =parseFloat(data.Kelembaban);
+  const soil=parseFloat(data.Tanah);
+  if(isNaN(temp)||isNaN(hum)||isNaN(soil))return;
 
-db.ref('/Monitoring').on('value',
-  function(snap){
-    const data=snap.val(); if(!data)return;
-    if(!firstData){
-      firstData=true;
-      document.getElementById('fbTxt').textContent='Connected ✓';
-      document.getElementById('fbTxt').style.color='var(--g6)';
-      document.getElementById('fb-status').textContent='Firebase OK';
-      document.getElementById('exp-btn').disabled=false;
-      addLog('info','✅ Firebase terhubung!',nowStr());
-    }
+  const ts=nowStr();
 
-    const temp=parseFloat(data.Suhu);
-    const hum =parseFloat(data.Kelembaban);
-    const soil=parseFloat(data.Tanah);
-    if(isNaN(temp)||isNaN(hum)||isNaN(soil))return;
+  // Charts
+  labels.push(ts); dT.push(temp); dH.push(hum); dS.push(soil);
+  if(labels.length>MAX){labels.shift();dT.shift();dH.shift();dS.shift();}
+  sc2.data.datasets[1].data=Array(labels.length).fill(40);
+  mc.update(); sc2.update();
 
-    const now=new Date(); const w=getW(now);
-    const ts=nowStr();
-    const stat=sysStatus(temp,soil);
+  // Cards
+  document.getElementById('vT').innerHTML=`${temp.toFixed(1)}<span class="cu"> °C</span>`;
+  document.getElementById('vH').innerHTML=`${hum.toFixed(1)}<span class="cu"> %</span>`;
+  document.getElementById('vS').innerHTML=`${soil}<span class="cu"> %</span>`;
+  document.getElementById('bT').style.width=`${Math.min(100,Math.max(0,((temp-15)/30)*100))}%`;
+  document.getElementById('bH').style.width=`${Math.min(100,hum)}%`;
+  document.getElementById('bS').style.width=`${Math.min(100,soil)}%`;
 
-    // Charts
-    labels.push(w.jam); dT.push(temp); dH.push(hum); dS.push(soil);
-    if(labels.length>MAX){labels.shift();dT.shift();dH.shift();dS.shift();}
-    sc2.data.datasets[1].data=Array(labels.length).fill(40);
-    mc.update(); sc2.update();
-
-    // Cards
-    document.getElementById('vT').innerHTML=`${temp.toFixed(1)}<span class="cu"> °C</span>`;
-    document.getElementById('vH').innerHTML=`${hum.toFixed(1)}<span class="cu"> %</span>`;
-    document.getElementById('vS').innerHTML=`${soil}<span class="cu"> %</span>`;
-    document.getElementById('bT').style.width=`${Math.min(100,Math.max(0,((temp-15)/30)*100))}%`;
-    document.getElementById('bH').style.width=`${Math.min(100,hum)}%`;
-    document.getElementById('bS').style.width=`${Math.min(100,soil)}%`;
-    if(prevT!==null){const d=(temp-prevT).toFixed(1);document.getElementById('trT').innerHTML=`<span style="color:${d>0?'var(--amber)':'var(--blue)'}">${d>0?'↗':'↘'} ${Math.abs(d)}°C</span> dari sebelumnya`;}
-    document.getElementById('trS').innerHTML=soil<40?`<span style="color:var(--red)">⚠ Perlu disiram!</span>`:`<span style="color:var(--g6)">✓ Cukup lembab</span>`;
-    const ico={NORMAL:'🟢',HANGAT:'🟡',WASPADA:'🟠',KRITIS:'🔴'}[stat]||'🟢';
-    document.getElementById('vSt').textContent=`${ico} ${stat}`;
-
-    const fanON =parseON(data.Kipas);
-    const pompON=parseON(data.PompaAir);
-    setAct('fan',fanON); setAct('pump',pompON);
-    document.getElementById('cv-fan').textContent=`${temp.toFixed(1)}°C`;
-    document.getElementById('cf-fan').style.width=`${Math.min(100,Math.max(0,((temp-15)/30)*100))}%`;
-    document.getElementById('cv-pump').textContent=`${soil}%`;
-    document.getElementById('cf-pump').style.width=`${Math.min(100,soil)}%`;
-
-    // Simpan histori
-    const entry={
-      no:histori.length+1,
-      hari:w.hari, tgl:w.tgl, bln:w.bln, blnNum:w.blnNum, thn:w.thn, jam:w.jam,
-      temp:temp.toFixed(1), hum:hum.toFixed(1), soil,
-      fan:fanON?'ON':'OFF', pompa:pompON?'ON':'OFF', status:stat
-    };
-    histori.push(entry);
-
-    // Stats
-    if(stat==='NORMAL')cntN++; else if(stat==='KRITIS')cntC++; else cntW++;
-    document.getElementById('ls-total').textContent =histori.length;
-    document.getElementById('ls-normal').textContent=cntN;
-    document.getElementById('ls-warn').textContent  =cntW;
-    document.getElementById('ls-crit').textContent  =cntC;
-
-    renderHistori();
-    updatePreview();
-
-    document.getElementById('upd').textContent=ts;
-    prevT=temp;
-    addLog('info',`T:${temp.toFixed(1)}°C Tanah:${soil}% Fan:${fanON?'ON':'OFF'} Pompa:${pompON?'ON':'OFF'}`,ts);
-  },
-  function(err){
-    addLog('alert','🚨 Firebase error: '+err.message,nowStr());
-    document.getElementById('fbTxt').textContent='Error!';
-    document.getElementById('fbTxt').style.color='var(--red)';
-    document.getElementById('fb-status').textContent='Firebase Error';
+  if(prevT!==null){
+    const d=(temp-prevT).toFixed(1);
+    document.getElementById('trT').innerHTML=`<span style="color:${d>0?'var(--amber)':'var(--blue)'}">${d>0?'↗':'↘'} ${Math.abs(d)}°C</span> dari sebelumnya`;
   }
-);
+  document.getElementById('trS').innerHTML=soil<40
+    ?`<span style="color:var(--red)">⚠ Perlu disiram!</span>`
+    :`<span style="color:var(--g6)">✓ Cukup lembab</span>`;
 
-db.ref('/Control/PompaAir').once('value').then(s=>{
-  const v=s.val(); updatePumpUI(v===null||v===undefined?-1:parseInt(v)||0);
-}).catch(()=>updatePumpUI(-1));
+  const stat=sysStatus(temp,soil);
+  const ico={NORMAL:'🟢',HANGAT:'🟡',WASPADA:'🟠',KRITIS:'🔴'}[stat]||'🟢';
+  document.getElementById('vSt').textContent=`${ico} ${stat}`;
+
+  const fanON =parseON(data.Kipas);
+  const pompON=parseON(data.PompaAir);
+  setAct('fan',fanON); setAct('pump',pompON);
+  document.getElementById('cv-fan').textContent =`${temp.toFixed(1)}°C`;
+  document.getElementById('cf-fan').style.width =`${Math.min(100,Math.max(0,((temp-15)/30)*100))}%`;
+  document.getElementById('cv-pump').textContent=`${soil}%`;
+  document.getElementById('cf-pump').style.width=`${Math.min(100,soil)}%`;
+
+  document.getElementById('upd').textContent=ts;
+  prevT=temp;
+
+  addLog('info',`T:${temp.toFixed(1)}°C Tanah:${soil}% Fan:${fanON?'ON':'OFF'} Pompa:${pompON?'ON':'OFF'}`,ts);
+}
+
+// ── EXPORT CSV ────────────────────────────────
+function expCSV(){
+  if(histori.length===0){alert('Belum ada data!');return;}
+
+  // Header CSV — tiap kolom terpisah dengan koma
+  let csv  = 'No,Hari,Tanggal,Bulan,Tahun,Jam,Suhu (C),Kelembaban (%),Tanah (%),Fan,Pompa Air,Status\n';
+
+  // Data — tiap field di kolom masing-masing
+  histori.forEach(r=>{
+    csv += [
+      r.no,
+      r.hari,
+      r.tgl,
+      r.bln,
+      r.thn,
+      r.jam,
+      r.suhu,
+      r.hum,
+      r.tanah,
+      r.fan,
+      r.pompa,
+      r.status
+    ].join(',') + '\n';
+  });
+
+  // BOM UTF-8 agar Excel baca huruf Indonesia dengan benar
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const now  = new Date();
+  const pad  = n=>String(n).padStart(2,'0');
+  const nama = `SmartGreenhouse_${pad(now.getDate())}-${pad(now.getMonth()+1)}-${now.getFullYear()}_${pad(now.getHours())}-${pad(now.getMinutes())}.csv`;
+  const a=document.createElement('a');
+  a.href=url; a.download=nama; a.click();
+  URL.revokeObjectURL(url);
+  addLog('info',`⬇ CSV: ${nama} (${histori.length} data)`,nowStr());
+}
+
+// ══════════════════════════════════════════════
+// INIT — Load semua history dari Firebase dulu
+// ══════════════════════════════════════════════
+document.getElementById('load-prog').textContent='Mengambil riwayat data...';
+
+// STEP 1: Load semua history dari /History
+db.ref('/History').once('value').then(snap=>{
+  const all=snap.val();
+  if(all){
+    const keys=Object.keys(all).sort((a,b)=>parseInt(a)-parseInt(b));
+    keys.forEach(k=>{
+      const r=all[k];
+      histori.push({
+        no    : r.no    || k,
+        hari  : r.hari  || '?',
+        tgl   : r.tgl   || '?',
+        bln   : r.bln   || '?',
+        thn   : r.thn   || '?',
+        jam   : r.jam   || '?',
+        suhu  : r.suhu  || 0,
+        hum   : r.hum   || 0,
+        tanah : r.tanah || 0,
+        fan   : r.fan   || 'OFF',
+        pompa : r.pompa || 'OFF',
+        status: r.status|| 'NORMAL'
+      });
+    });
+    renderHistori();
+    updateStats();
+    addLog('info',`📂 Loaded ${histori.length} data dari Firebase`,nowStr());
+  }
+
+  document.getElementById('load-prog').textContent='Menghubungkan realtime...';
+
+  // STEP 2: Tampilkan halaman
+  document.getElementById('loading').style.display='none';
+  document.getElementById('main').style.display='block';
+
+  // STEP 3: Listen data realtime /Monitoring
+  db.ref('/Monitoring').on('value',
+    function(snapshot){
+      const data=snapshot.val(); if(!data)return;
+      if(!firstData){
+        firstData=true;
+        document.getElementById('fbTxt').textContent='Connected ✓';
+        document.getElementById('fbTxt').style.color='var(--g6)';
+        document.getElementById('fb-status').textContent='Firebase OK';
+        addLog('info','✅ Firebase terhubung! Data realtime masuk.',nowStr());
+      }
+      updateRealtime(data);
+    },
+    function(err){
+      addLog('alert','🚨 Firebase error: '+err.message,nowStr());
+      document.getElementById('fbTxt').textContent='Error!';
+      document.getElementById('fbTxt').style.color='var(--red)';
+    }
+  );
+
+  // STEP 4: Listen history baru yang masuk
+  db.ref('/History').on('child_added',function(snap){
+    const r=snap.val(); if(!r)return;
+    const exists=histori.find(h=>h.no===r.no);
+    if(!exists){
+      histori.push({
+        no:r.no, hari:r.hari, tgl:r.tgl, bln:r.bln, thn:r.thn, jam:r.jam,
+        suhu:r.suhu, hum:r.hum, tanah:r.tanah,
+        fan:r.fan, pompa:r.pompa, status:r.status
+      });
+      histori.sort((a,b)=>a.no-b.no);
+      renderHistori();
+      updateStats();
+    }
+  });
+
+}).catch(err=>{
+  document.getElementById('load-prog').textContent='⚠ Gagal: '+err.message;
+  setTimeout(()=>{
+    document.getElementById('loading').style.display='none';
+    document.getElementById('main').style.display='block';
+  },2000);
+});
 </script>
 </body>
 </html>
