@@ -290,18 +290,27 @@ footer div{font-size:.63rem;color:var(--dim);font-family:'Space Mono',monospace}
       <div class="atop">
         <div><div class="aico">💧</div>
           <div class="aname">Pompa Air</div>
-          <div class="asub">GPIO 33 · 5V · Full Otomatis</div>
+          <div class="asub">GPIO 33 · Tarik air dari galon ke tanah</div>
         </div>
         <div class="spill" id="sp-pump">⭕ OFF</div>
       </div>
-      <div class="mbadge">⚙ AUTO · Tanah &lt;40% → ON hingga ≥40%</div>
+      <div class="mbadge" id="badge-pump">⚙ AUTO · Tanah &lt;40% → ON hingga ≥40%</div>
       <div class="cbar">
         <div class="clbl"><span>Kelembaban tanah</span><span id="cv-pump">—</span></div>
         <div class="ctrk"><div class="cfill" id="cf-pump" style="width:0%;background:linear-gradient(90deg,#1db8d6,var(--blue))"></div></div>
       </div>
       <div class="srow">
         <div class="astat"><div class="adot"></div><span id="as-pump">STANDBY</span></div>
-        <span class="hint">ON terus hingga Tanah ≥40%</span>
+        <span class="hint" id="hint-pump">Auto ON jika Tanah &lt;40%</span>
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:.6rem;color:var(--dim);font-family:monospace;text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px">Kontrol Manual Pompa Air</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px">
+          <button id="pb-auto" onclick="setModePompa(0)" style="padding:8px 0;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid rgba(212,255,78,.4);background:rgba(212,255,78,.15);color:var(--lime)">⚙ AUTO</button>
+          <button id="pb-on"   onclick="setModePompa(1)" style="padding:8px 0;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--muted)">▶ ON</button>
+          <button id="pb-off"  onclick="setModePompa(2)" style="padding:8px 0;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--muted)">■ OFF</button>
+        </div>
+        <div id="fb-pump" style="font-size:.62rem;font-family:monospace;padding:4px 8px;border-radius:6px;text-align:center;min-height:22px;opacity:0;transition:opacity .3s"></div>
       </div>
     </div>
   </div>
@@ -557,6 +566,82 @@ function updateRealtime(data){
   addLog('info',`T:${temp.toFixed(1)}°C Tanah:${soil}% Fan:${fanON?'ON':'OFF'} Pompa:${pompON?'ON':'OFF'}`,ts);
 }
 
+// ── KONTROL MODE POMPA ────────────────────────
+// 0=AUTO, 1=MANUAL ON, 2=MANUAL OFF
+let pumpLock = false;
+function setModePompa(mode){
+  if(pumpLock) return;
+  pumpLock = true;
+  const lbl = {0:'AUTO',1:'MANUAL ON',2:'MANUAL OFF'};
+  const fbEl = document.getElementById('fb-pump');
+  fbEl.style.opacity='1';
+  fbEl.style.background='rgba(67,217,245,.07)';
+  fbEl.style.color='var(--blue)';
+  fbEl.style.border='1px solid rgba(67,217,245,.18)';
+  fbEl.textContent = '📡 Set Pompa → ' + lbl[mode] + '…';
+
+  db.ref('/Control/ModePompa').set(mode)
+    .then(()=>{
+      updatePumpBtns(mode);
+      fbEl.style.background='rgba(82,196,122,.1)';
+      fbEl.style.color='var(--g6)';
+      fbEl.style.border='1px solid rgba(82,196,122,.2)';
+      fbEl.textContent = '✅ Pompa → ' + lbl[mode];
+      addLog('info','[WEB] Mode Pompa = ' + lbl[mode], nowStr());
+      setTimeout(()=>{ fbEl.style.opacity='0'; },4000);
+    })
+    .catch(err=>{
+      fbEl.style.background='rgba(255,82,82,.1)';
+      fbEl.style.color='var(--red)';
+      fbEl.textContent = '🚨 Gagal: ' + err.message;
+    })
+    .finally(()=>setTimeout(()=>{ pumpLock=false; },1500));
+}
+
+function updatePumpBtns(mode){
+  const btnAuto = document.getElementById('pb-auto');
+  const btnOn   = document.getElementById('pb-on');
+  const btnOff  = document.getElementById('pb-off');
+  const badge   = document.getElementById('badge-pump');
+  const hint    = document.getElementById('hint-pump');
+
+  // Reset semua
+  [btnAuto,btnOn,btnOff].forEach(b=>{
+    b.style.border='1px solid rgba(255,255,255,.08)';
+    b.style.background='rgba(255,255,255,.04)';
+    b.style.color='var(--muted)';
+  });
+
+  if(mode===0){
+    btnAuto.style.border='1px solid rgba(212,255,78,.4)';
+    btnAuto.style.background='rgba(212,255,78,.15)';
+    btnAuto.style.color='var(--lime)';
+    badge.textContent='⚙ AUTO · Tanah <40% → ON hingga ≥40%';
+    badge.style.background='rgba(212,255,78,.1)';
+    badge.style.color='var(--lime)';
+    badge.style.border='1px solid rgba(212,255,78,.2)';
+    hint.textContent='Auto ON jika Tanah <40%';
+  } else if(mode===1){
+    btnOn.style.border='1px solid rgba(67,217,245,.45)';
+    btnOn.style.background='rgba(67,217,245,.15)';
+    btnOn.style.color='var(--blue)';
+    badge.textContent='🖥 MANUAL ON — Paksa Nyala';
+    badge.style.background='rgba(67,217,245,.1)';
+    badge.style.color='var(--blue)';
+    badge.style.border='1px solid rgba(67,217,245,.2)';
+    hint.textContent='Paksa ON dari web';
+  } else {
+    btnOff.style.border='1px solid rgba(255,82,82,.42)';
+    btnOff.style.background='rgba(255,82,82,.13)';
+    btnOff.style.color='var(--red)';
+    badge.textContent='🖥 MANUAL OFF — Paksa Mati';
+    badge.style.background='rgba(255,82,82,.1)';
+    badge.style.color='var(--red)';
+    badge.style.border='1px solid rgba(255,82,82,.2)';
+    hint.textContent='Paksa OFF dari web';
+  }
+}
+
 // ── EXPORT XLS (Excel HTML Table) ─────────────
 // Format .xls via HTML table — dibuka Excel langsung rapi
 // Setiap kolom otomatis terpisah, ada warna, header, info proyek
@@ -757,6 +842,12 @@ function expCSV(){
 document.getElementById('load-prog').textContent='Mengambil riwayat data...';
 
 // STEP 1: Load semua history dari /History
+// Sync mode pompa saat web pertama dibuka
+db.ref('/Control/ModePompa').once('value').then(snap=>{
+  const m = snap.val();
+  updatePumpBtns(m===null||m===undefined ? 0 : parseInt(m)||0);
+}).catch(()=>updatePumpBtns(0));
+
 db.ref('/History').once('value').then(snap=>{
   const all=snap.val();
   if(all){
